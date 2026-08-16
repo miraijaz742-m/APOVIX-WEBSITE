@@ -15,6 +15,7 @@
 import { auth, db, avatarFor } from './fb.js';
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
 import { doc, getDoc } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
+import { onProfileComplete } from './auth-flow.js';
 
 const slots = document.querySelectorAll('[data-auth-nav]');
 
@@ -92,25 +93,43 @@ function removeBanner() {
   if (bar) bar.remove();
 }
 
-if (slots.length) {
-  onAuthStateChanged(auth, async (user) => {
-    if (!user) {
-      slots.forEach((slot) => {
-        slot.innerHTML = signedOutMarkup(slot.hasAttribute('data-auth-nav-mobile'));
-      });
-      removeBanner();
-      return;
-    }
-
-    const complete = await hasProfile(user.uid);
-
+async function render(user) {
+  if (!user) {
     slots.forEach((slot) => {
-      slot.replaceChildren(
-        chipFor(user, complete, slot.hasAttribute('data-auth-nav-mobile'))
-      );
+      slot.innerHTML = signedOutMarkup(slot.hasAttribute('data-auth-nav-mobile'));
     });
+    removeBanner();
+    return;
+  }
 
-    if (complete) removeBanner();
-    else showBanner(user);
+  const complete = await hasProfile(user.uid);
+
+  slots.forEach((slot) => {
+    slot.replaceChildren(
+      chipFor(user, complete, slot.hasAttribute('data-auth-nav-mobile'))
+    );
+  });
+
+  if (complete) removeBanner();
+  else showBanner(user);
+}
+
+if (slots.length) {
+  onAuthStateChanged(auth, render);
+
+  // Another tab finished the form. Drop the cached "incomplete" answer and
+  // re-check, so the banner here closes too.
+  onProfileComplete(() => {
+    checked.clear();
+    render(auth.currentUser);
+  });
+
+  // Back/forward navigation can restore this page from the bfcache with its
+  // DOM intact and no scripts re-run — which is how a completed signup could
+  // still be showing the banner. persisted tells us that happened.
+  window.addEventListener('pageshow', (e) => {
+    if (!e.persisted) return;
+    checked.clear();
+    render(auth.currentUser);
   });
 }

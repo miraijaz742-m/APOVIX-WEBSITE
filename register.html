@@ -184,7 +184,8 @@
     import { doc, getDoc, setDoc, serverTimestamp }
       from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
     import { describeError, firstAuthState, go, isNavigating, providerOf,
-             showNotice, hideNotice, withTimeout } from './assets/js/auth-flow.js';
+             showNotice, hideNotice, withTimeout, markProfileComplete }
+      from './assets/js/auth-flow.js';
 
     const $ = (id) => document.getElementById(id);
     const form = $('register-form');
@@ -241,7 +242,7 @@
       if (isNavigating()) return;
       try {
         const snap = await withTimeout(getDoc(doc(db, 'users', user.uid)), 15000, 'Checking your account');
-        if (snap.exists()) { go('account.html'); return; }
+        if (snap.exists()) { markProfileComplete(user.uid); go('account.html'); return; }
         enterProfileMode(user);
       } catch (err) {
         // Cannot tell whether a profile exists. Let them fill the form in
@@ -351,6 +352,9 @@
         );
       }
 
+      // Tell every other open tab so the "finish signup" banner closes there
+      // too, instead of nagging about something already done.
+      markProfileComplete(user.uid);
       showNotice(okBox, 'Account created. Taking you to your account...', 'ok');
       setTimeout(() => go('account.html'), 800);
     });

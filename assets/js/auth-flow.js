@@ -107,15 +107,53 @@ export function providerOf(user) {
   return id || 'unknown';
 }
 
-/** Show a message in a .notice element, or fall back to an alert. */
-export function showNotice(el, message, kind) {
+/**
+ * Show a message in a .notice element, or fall back to an alert.
+ * Pass autoHideMs to have a success message clear itself instead of sitting
+ * on the page forever.
+ */
+export function showNotice(el, message, kind, autoHideMs) {
   if (!el) { window.alert(message); return; }
+  if (el._hideTimer) { clearTimeout(el._hideTimer); el._hideTimer = null; }
   el.textContent = message;
   el.className = 'notice notice--' + (kind || 'error');
   el.hidden = false;
+  if (autoHideMs) {
+    el._hideTimer = setTimeout(() => { el.hidden = true; el._hideTimer = null; }, autoHideMs);
+  }
 }
 
-export function hideNotice(el) { if (el) el.hidden = true; }
+export function hideNotice(el) {
+  if (!el) return;
+  if (el._hideTimer) { clearTimeout(el._hideTimer); el._hideTimer = null; }
+  el.hidden = true;
+}
+
+/* -------------------------------------------------------------------------
+   Profile-complete signal
+   The "finish signup" banner lives on other pages. When registration
+   succeeds we have to tell them, otherwise a tab left open — or a page the
+   browser restored from its back/forward cache — keeps showing the nag for
+   something already done.
+   ---------------------------------------------------------------------- */
+const PROFILE_KEY = 'apovix.profileComplete';
+
+/** Called once the users/{uid} record exists. Notifies other tabs. */
+export function markProfileComplete(uid) {
+  try {
+    // Writing a changing value guarantees a storage event in other tabs.
+    localStorage.setItem(PROFILE_KEY, uid + ':' + Date.now());
+  } catch (_) {
+    // Private mode or storage disabled — the next page load still corrects itself.
+  }
+}
+
+/** Fires when any tab reports a completed profile. */
+export function onProfileComplete(handler) {
+  window.addEventListener('storage', (e) => {
+    if (e.key === PROFILE_KEY) handler();
+  });
+}
 
 /** Wrap a promise so a hung network call cannot leave a button spinning. */
 export function withTimeout(promise, ms, label) {

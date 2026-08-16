@@ -53,17 +53,24 @@
         </p>
         <ol>
           <li>
-            Create the account in
-            <a href="https://console.firebase.google.com/project/apovix-website/authentication/users" target="_blank" rel="noopener">Firebase console → Authentication → Add user</a>,
-            with an email and password. Copy the <strong>User UID</strong> it generates.
+            <strong>They sign in once.</strong> Send them to
+            <a href="index.html">the sign-in page</a> and have them use
+            <em>Continue with Google</em>. They will be turned away — that is
+            expected — and the page shows their <strong>User UID</strong> with a
+            copy button. Ask them to send it to you.
+            <br />
+            For an email/password account instead, create it in
+            <a href="https://console.firebase.google.com/project/apovix-website/authentication/users" target="_blank" rel="noopener">Firebase console → Authentication → Add user</a>
+            and copy the UID from there.
           </li>
           <li>Paste that UID into the form below to grant admin access.</li>
         </ol>
         <p style="margin-top:.75rem">
-          Step one needs the console because creating an Auth account requires
-          server credentials, which a browser page cannot hold safely. Anything
-          that could do it from here could also be abused by anyone who opened
-          this page.
+          A UID only exists once an account does, which is why they have to sign
+          in before you can grant anything. Creating accounts from this page
+          would need server credentials that a browser cannot hold safely —
+          anything able to do it here could be abused by anyone who opened the
+          page.
         </p>
       </div>
 

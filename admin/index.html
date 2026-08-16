@@ -28,15 +28,27 @@
 
       <div class="notice notice--error" id="error" hidden></div>
 
+      <button class="btn btn--ghost btn--block google-btn" type="button" id="google">
+        <svg viewBox="0 0 18 18" aria-hidden="true" focusable="false" width="18" height="18">
+          <path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.92c1.7-1.57 2.68-3.88 2.68-6.62Z"/>
+          <path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.92-2.26c-.8.54-1.84.86-3.04.86-2.34 0-4.32-1.58-5.03-3.7H.96v2.33A9 9 0 0 0 9 18Z"/>
+          <path fill="#FBBC05" d="M3.97 10.72a5.4 5.4 0 0 1 0-3.44V4.95H.96a9 9 0 0 0 0 8.1l3.01-2.33Z"/>
+          <path fill="#EA4335" d="M9 3.58c1.32 0 2.5.45 3.44 1.35l2.58-2.58C13.46.89 11.43 0 9 0A9 9 0 0 0 .96 4.95l3.01 2.33C4.68 5.16 6.66 3.58 9 3.58Z"/>
+        </svg>
+        Continue with Google
+      </button>
+
+      <div class="or"><span>or</span></div>
+
       <form id="login-form" novalidate>
         <div class="field">
           <label for="email">Email</label>
-          <input id="email" name="email" type="email" autocomplete="username" required />
+          <input id="email" name="email" type="email" autocomplete="username" />
         </div>
 
         <div class="field">
           <label for="password">Password</label>
-          <input id="password" name="password" type="password" autocomplete="current-password" required />
+          <input id="password" name="password" type="password" autocomplete="current-password" />
         </div>
 
         <button class="btn btn--primary btn--block" type="submit" id="submit" style="margin-top:1.25rem">
@@ -44,9 +56,27 @@
         </button>
       </form>
 
+      <!-- Shown when a sign-in succeeds but the account has no /admins record.
+           The first ever admin has to be added by hand, and this is where the
+           UID to paste into Firestore comes from. -->
+      <div class="uid-box" id="uid-box" hidden>
+        <p><strong>Signed in, but not yet an admin.</strong></p>
+        <p id="uid-who"></p>
+        <p class="uid-box__label">Firebase User UID</p>
+        <code id="uid-value"></code>
+        <button class="btn btn--ghost btn--sm btn--block" type="button" id="uid-copy" style="margin-top:.625rem">
+          Copy UID
+        </button>
+        <p class="uid-box__hint">
+          Add a document at <code>admins/&lt;this UID&gt;</code> in Firestore with
+          <code>name</code>, <code>email</code>, <code>role: owner</code> and
+          <code>createdAt</code>, then sign in again.
+        </p>
+      </div>
+
       <p class="login-card__foot">
-        Accounts are created in the Firebase console, then granted access from
-        the Users page. There is no self sign-up.
+        Access is granted per account from the Users page. There is no self sign-up —
+        signing in with Google does not by itself give you access.
       </p>
 
     </div>
@@ -56,81 +86,163 @@
     import { auth, db } from './assets/js/firebase-init.js';
     import {
       signInWithEmailAndPassword,
+      signInWithPopup,
+      signInWithRedirect,
+      getRedirectResult,
+      GoogleAuthProvider,
       onAuthStateChanged,
       signOut
     } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
     import { doc, getDoc } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
 
-    const form   = document.getElementById('login-form');
-    const errBox = document.getElementById('error');
-    const submit = document.getElementById('submit');
+    const form      = document.getElementById('login-form');
+    const errBox    = document.getElementById('error');
+    const submit    = document.getElementById('submit');
+    const googleBtn = document.getElementById('google');
+    const uidBox    = document.getElementById('uid-box');
+
+    function reset() {
+      submit.disabled = false;  submit.textContent = 'Sign in';
+      googleBtn.disabled = false; googleBtn.classList.remove('is-busy');
+    }
 
     function fail(message) {
       errBox.textContent = message;
       errBox.hidden = false;
-      submit.disabled = false;
-      submit.textContent = 'Sign in';
+      reset();
     }
 
-    // Already signed in and already an admin? Skip the form.
+    /* Show the UID so the very first admin record can be created by hand.
+       Until /admins has one entry, nobody can grant access from inside the
+       panel — the rules require an existing owner. */
+    function showUid(user) {
+      document.getElementById('uid-who').textContent =
+        'Signed in as ' + (user.email || user.uid) + '.';
+      document.getElementById('uid-value').textContent = user.uid;
+      uidBox.hidden = false;
+    }
+
+    document.getElementById('uid-copy').addEventListener('click', async (e) => {
+      try {
+        await navigator.clipboard.writeText(document.getElementById('uid-value').textContent);
+        e.target.textContent = 'Copied';
+        setTimeout(() => { e.target.textContent = 'Copy UID'; }, 1800);
+      } catch (_) {
+        e.target.textContent = 'Select it manually';
+      }
+    });
+
+    /**
+     * The gate. Signing in proves identity; this proves permission.
+     * Returns true when the panel should open.
+     */
+    async function admitOrExplain(user) {
+      let snap;
+      try {
+        snap = await getDoc(doc(db, 'admins', user.uid));
+      } catch (err) {
+        showUid(user);
+        await signOut(auth);
+        fail(err.code === 'permission-denied'
+          ? 'This account is not authorised for the admin panel.'
+          : 'Could not reach Firestore: ' + err.message);
+        return false;
+      }
+
+      if (!snap.exists()) {
+        showUid(user);
+        await signOut(auth);
+        fail('This account is not on the admin list yet.');
+        return false;
+      }
+
+      window.location.replace('dashboard.html');
+      return true;
+    }
+
+    const AUTH_ERRORS = {
+      'auth/invalid-credential':     'That email and password do not match an account.',
+      'auth/invalid-email':          'That is not a valid email address.',
+      'auth/user-disabled':          'This account has been disabled.',
+      'auth/too-many-requests':      'Too many attempts. Wait a few minutes and try again.',
+      'auth/network-request-failed': 'No connection to Firebase. Check your internet.',
+      'auth/popup-closed-by-user':   'Sign-in window was closed before it finished.',
+      'auth/cancelled-popup-request':'Another sign-in window is already open.',
+      'auth/unauthorized-domain':
+        'This domain is not on the Firebase authorised list. Add it under ' +
+        'Authentication -> Settings -> Authorised domains.',
+      'auth/operation-not-allowed':
+        'That sign-in method is not enabled for this project. Turn it on in ' +
+        'Firebase console -> Authentication -> Sign-in method.'
+    };
+
+    /* --- Google ---------------------------------------------------------- */
+    const provider = new GoogleAuthProvider();
+    provider.setCustomParameters({ prompt: 'select_account' });
+
+    googleBtn.addEventListener('click', async () => {
+      errBox.hidden = true;
+      uidBox.hidden = true;
+      googleBtn.disabled = true;
+      googleBtn.classList.add('is-busy');
+
+      try {
+        const cred = await signInWithPopup(auth, provider);
+        await admitOrExplain(cred.user);
+      } catch (err) {
+        // Popup blockers are common on phones — fall back to a full redirect.
+        if (err.code === 'auth/popup-blocked' ||
+            err.code === 'auth/operation-not-supported-in-this-environment') {
+          try {
+            await signInWithRedirect(auth, provider);
+            return;
+          } catch (err2) {
+            return fail(AUTH_ERRORS[err2.code] || (err2.code + ' — ' + err2.message));
+          }
+        }
+        fail(AUTH_ERRORS[err.code] || (err.code + ' — ' + err.message));
+      }
+    });
+
+    /* --- Email + password ------------------------------------------------ */
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      errBox.hidden = true;
+      uidBox.hidden = true;
+
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+      if (!email || !password) return fail('Enter your email and password, or use Google above.');
+
+      submit.disabled = true;
+      submit.textContent = 'Signing in…';
+
+      let cred;
+      try {
+        cred = await signInWithEmailAndPassword(auth, email, password);
+      } catch (err) {
+        return fail(AUTH_ERRORS[err.code] || (err.code + ' — ' + err.message));
+      }
+      await admitOrExplain(cred.user);
+    });
+
+    /* --- Returning from a redirect sign-in -------------------------------- */
+    try {
+      const result = await getRedirectResult(auth);
+      if (result && result.user) await admitOrExplain(result.user);
+    } catch (err) {
+      fail(AUTH_ERRORS[err.code] || (err.code + ' — ' + err.message));
+    }
+
+    /* --- Already signed in and already an admin? Skip the form ------------ */
     onAuthStateChanged(auth, async (user) => {
-      if (!user) return;
+      if (!user || !uidBox.hidden) return;
       try {
         const snap = await getDoc(doc(db, 'admins', user.uid));
         if (snap.exists()) window.location.replace('dashboard.html');
       } catch (_) {
         // Not authorised, or Firestore unreachable — leave the form up.
       }
-    });
-
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      errBox.hidden = true;
-      submit.disabled = true;
-      submit.textContent = 'Signing in…';
-
-      const email = document.getElementById('email').value.trim();
-      const password = document.getElementById('password').value;
-
-      if (!email || !password) return fail('Enter your email and password.');
-
-      let cred;
-      try {
-        cred = await signInWithEmailAndPassword(auth, email, password);
-      } catch (err) {
-        const map = {
-          'auth/invalid-credential': 'That email and password do not match an account.',
-          'auth/invalid-email':      'That is not a valid email address.',
-          'auth/user-disabled':      'This account has been disabled.',
-          'auth/too-many-requests':  'Too many attempts. Wait a few minutes and try again.',
-          'auth/network-request-failed': 'No connection to Firebase. Check your internet.',
-          'auth/operation-not-allowed':
-            'Email/password sign-in is not enabled for this project yet. ' +
-            'Turn it on in Firebase console -> Authentication -> Sign-in method.'
-        };
-        return fail(map[err.code] || (err.code + ' — ' + err.message));
-      }
-
-      // Signing in is not the same as being allowed in.
-      try {
-        const snap = await getDoc(doc(db, 'admins', cred.user.uid));
-        if (!snap.exists()) {
-          await signOut(auth);
-          return fail(
-            'This account is not on the admin list. Its user ID is ' +
-            cred.user.uid + ' — an owner must add it on the Users page.'
-          );
-        }
-      } catch (err) {
-        await signOut(auth);
-        return fail(
-          err.code === 'permission-denied'
-            ? 'This account is not authorised for the admin panel.'
-            : 'Could not reach Firestore: ' + err.message
-        );
-      }
-
-      window.location.replace('dashboard.html');
     });
   </script>
 </body>

@@ -76,25 +76,27 @@ removed before the site is published.
 
 ## First-time admin setup
 
-Firestore and its rules are already deployed. Two things still need the Firebase
-console, because both require server credentials a browser page cannot hold:
+Firestore and its rules are already deployed, and the panel supports **Google
+sign-in** and email/password — whichever providers are enabled in the console.
 
-1. **Enable email sign-in** —
-   [Authentication → Sign-in method](https://console.firebase.google.com/project/apovix-website/authentication/providers)
-   → enable **Email/Password**.
-2. **Create the first account** —
-   [Authentication → Users](https://console.firebase.google.com/project/apovix-website/authentication/users)
-   → Add user. Copy the **User UID**.
-3. **Make it an owner** —
+The first admin has to be created by hand. Nobody can grant access from inside
+the panel until one owner exists, because the rules require an existing owner.
+
+1. **Sign in** at `/admin/` with **Continue with Google**. You will be rejected —
+   that is expected. The page then shows your **Firebase User UID** with a copy
+   button.
+2. **Create the owner record** —
    [Firestore → Data](https://console.firebase.google.com/project/apovix-website/firestore/data)
-   → start collection `admins` → document ID = that UID → fields:
+   → start collection `admins` → document ID = the UID you copied → fields:
 
    | Field | Type | Value |
    | --- | --- | --- |
    | `name` | string | your name |
-   | `email` | string | the same email |
+   | `email` | string | the Google account's email |
    | `role` | string | `owner` |
    | `createdAt` | timestamp | now |
 
-Step 3 is manual only for the first account — after that, add people from the
-Users page in the panel.
+3. **Sign in again.** The panel opens.
+
+After that, add people from the Users page — for a Google account they must sign
+in once first so their UID exists.

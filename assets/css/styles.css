@@ -552,9 +552,9 @@ img.work-card__shot {
 
 .founder {
   display: flex;
-  gap: clamp(1.25rem, 3vw, 2.25rem);
+  gap: clamp(1.5rem, 3.5vw, 2.75rem);
   align-items: center;
-  padding: clamp(1.25rem, 2.5vw, 1.875rem);
+  padding: clamp(1.5rem, 3vw, 2.5rem);
   border: 1px solid var(--line);
   border-radius: var(--radius);
 }
@@ -575,21 +575,24 @@ img.work-card__shot {
 }
 /* A full-width row can carry a larger portrait than a narrow column could */
 @media (min-width: 640px) {
-  .founder__photo { width: 104px; height: 104px; }
+  .founder__photo { width: 128px; height: 128px; }
+}
+@media (min-width: 960px) {
+  .founder__photo { width: 144px; height: 144px; }
 }
 .founder__photo svg { width: 26px; height: 26px; color: var(--line); }
 /* Replace with: <img class="founder__photo" src="..." alt="Portrait of [name]" /> */
 img.founder__photo { object-fit: cover; }
 
-.founder__name { font-size: var(--text-lg); }
+.founder__name { font-size: var(--text-2xl); }
 .founder__role {
-  font-size: var(--text-xs);
+  font-size: var(--text-sm);
   text-transform: uppercase;
   letter-spacing: 0.12em;
   color: var(--muted);
-  margin: 0.375rem 0 0.75rem;
+  margin: 0.5rem 0 0.875rem;
 }
-.founder__bio { font-size: var(--text-sm); line-height: 1.55; max-width: 62ch; }
+.founder__bio { font-size: var(--text-base); line-height: 1.6; max-width: 64ch; }
 
 /* ==========================================================================
    13. CONTACT

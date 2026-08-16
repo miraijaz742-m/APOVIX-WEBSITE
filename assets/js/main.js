@@ -467,6 +467,54 @@
 
 
   /* ------------------------------------------------------------------------
+     5b. NAV DROPDOWNS
+     Click, not hover: hover menus are unusable on touch, and a click target
+     behaves the same on every device. The panel starts [hidden] in the markup
+     so with JS off nothing dangles open.
+     ---------------------------------------------------------------------- */
+  var dropdowns = document.querySelectorAll('[data-dropdown]');
+
+  function closeAllDropdowns(except) {
+    Array.prototype.forEach.call(dropdowns, function (item) {
+      if (item === except) return;
+      var trigger = item.querySelector('[data-dropdown-trigger]');
+      var panel = item.querySelector('[data-dropdown-panel]');
+      if (trigger) trigger.setAttribute('aria-expanded', 'false');
+      if (panel) panel.hidden = true;
+    });
+  }
+
+  Array.prototype.forEach.call(dropdowns, function (item) {
+    var trigger = item.querySelector('[data-dropdown-trigger]');
+    var panel = item.querySelector('[data-dropdown-panel]');
+    if (!trigger || !panel) return;
+
+    trigger.addEventListener('click', function (e) {
+      e.stopPropagation();
+      var open = trigger.getAttribute('aria-expanded') === 'true';
+      closeAllDropdowns(item);
+      trigger.setAttribute('aria-expanded', open ? 'false' : 'true');
+      panel.hidden = open;
+    });
+
+    // Choosing something closes the menu behind you
+    panel.addEventListener('click', function (e) {
+      if (!e.target.closest('a')) return;
+      trigger.setAttribute('aria-expanded', 'false');
+      panel.hidden = true;
+    });
+  });
+
+  if (dropdowns.length) {
+    document.addEventListener('click', function () { closeAllDropdowns(null); });
+    document.addEventListener('keydown', function (e) {
+      if (e.key !== 'Escape') return;
+      closeAllDropdowns(null);
+    });
+  }
+
+
+  /* ------------------------------------------------------------------------
      6. FOOTER YEAR
      ---------------------------------------------------------------------- */
   var yearEl = document.querySelector('[data-year]');

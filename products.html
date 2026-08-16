@@ -32,7 +32,24 @@
       <nav class="site-nav" aria-label="Primary">
         <ul class="site-nav__list">
           <li><a href="index.html#services">Services</a></li>
-          <li><a href="products.html" aria-current="page">Products</a></li>
+          <li class="nav-item--menu" data-dropdown>
+            <button class="nav-trigger" type="button" data-dropdown-trigger
+                    aria-expanded="false" aria-controls="menu-products" aria-current="page">
+              Products
+            </button>
+            <div class="nav-menu" id="menu-products" data-dropdown-panel hidden>
+              <a href="https://carevix.online/" target="_blank" rel="noopener">
+                CareVix
+                <span class="nav-menu__desc">Pharmacy billing, stock &amp; expiry</span>
+              </a>
+              <a href="products.html#crushvix">
+                CrushVix
+                <span class="nav-menu__desc">Crusher plant operations</span>
+              </a>
+              <span class="nav-menu__rule" aria-hidden="true"></span>
+              <a class="nav-menu__all" href="products.html">All products &rarr;</a>
+            </div>
+          </li>
           <li><a href="index.html#work">Work</a></li>
           <li><a href="index.html#process">Process</a></li>
           <li><a href="about.html">About</a></li>
@@ -63,7 +80,23 @@
     <nav class="mobile-menu__nav container" aria-label="Mobile">
       <ul>
         <li><a href="index.html#services" data-menu-link>Services</a></li>
-        <li><a href="products.html" data-menu-link>Products</a></li>
+        <li class="nav-item--menu" data-dropdown>
+          <button class="nav-trigger" type="button" data-dropdown-trigger
+                  aria-expanded="false" aria-controls="menu-products-m">
+            Products
+          </button>
+          <div class="nav-menu" id="menu-products-m" data-dropdown-panel hidden>
+            <a href="https://carevix.online/" target="_blank" rel="noopener" data-menu-link>
+              CareVix
+              <span class="nav-menu__desc">Pharmacy billing, stock &amp; expiry</span>
+            </a>
+            <a href="products.html#crushvix" data-menu-link>
+              CrushVix
+              <span class="nav-menu__desc">Crusher plant operations</span>
+            </a>
+            <a class="nav-menu__all" href="products.html" data-menu-link>All products &rarr;</a>
+          </div>
+        </li>
         <li><a href="index.html#work" data-menu-link>Work</a></li>
         <li><a href="index.html#process" data-menu-link>Process</a></li>
         <li><a href="about.html" data-menu-link>About</a></li>
@@ -94,7 +127,7 @@
         <div class="products">
 
           <!-- CareVix ------------------------------------------------------ -->
-          <article class="product reveal">
+          <article class="product reveal" id="carevix">
             <img class="work-card__shot" src="assets/project_images/p1.png" alt="CareVix dashboard showing daily sales, stock health and quick billing" width="1920" height="1080" loading="lazy" decoding="async" />
 
             <div class="product__body">
@@ -129,7 +162,7 @@
           </article>
 
           <!-- CrushVix ----------------------------------------------------- -->
-          <article class="product reveal">
+          <article class="product reveal" id="crushvix">
             <img class="work-card__shot" src="assets/project_images/p2.png" alt="CrushVix business dashboard showing sales, plant status and active deployment" width="1908" height="1030" loading="lazy" decoding="async" />
 
             <div class="product__body">

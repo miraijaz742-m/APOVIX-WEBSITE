@@ -33,7 +33,7 @@
   --text-4xl: clamp(2.25rem, 1.4rem + 4vw, 4rem);         /* 36 → 64 — h1 */
 
   /* Space */
-  --space-section: clamp(4rem, 9vw, 8rem);  /* 64 → 128 */
+  --space-section: clamp(2.75rem, 5.5vw, 5rem);  /* 44 → 80 */
   --container:  1200px;
   --gutter:     clamp(1.25rem, 4vw, 2.5rem);
 
@@ -133,9 +133,9 @@ h1, h2, h3 {
 
 .section { padding-block: var(--space-section); }
 .section--surface { background: var(--surface); }
-.section--tight  { padding-block: clamp(2.5rem, 5vw, 4rem); }
+.section--tight  { padding-block: clamp(1.75rem, 3.5vw, 2.75rem); }
 
-.section__head { max-width: 46rem; margin-bottom: clamp(2.5rem, 5vw, 4rem); }
+.section__head { max-width: 46rem; margin-bottom: clamp(1.75rem, 3vw, 2.5rem); }
 .section__title { font-size: var(--text-3xl); }
 .section__lede {
   font-size: var(--text-lg);
@@ -309,7 +309,7 @@ body.is-locked { overflow: hidden; }
 .hero {
   position: relative;
   overflow: hidden;
-  padding-block: clamp(3.5rem, 8vw, 7.5rem) clamp(4rem, 9vw, 8rem);
+  padding-block: clamp(2.5rem, 5.5vw, 4.5rem) clamp(2.75rem, 6vw, 5rem);
 }
 
 /* The mark as a large cropped structural graphic, bleeding off the right */
@@ -367,14 +367,14 @@ body.is-locked { overflow: hidden; }
 }
 .hero__lede {
   font-size: var(--text-lg);
-  margin-top: 1.75rem;
+  margin-top: 1.125rem;
   max-width: 44ch;
 }
 .hero__actions {
   display: flex;
   flex-wrap: wrap;
   gap: 0.875rem;
-  margin-top: 2.5rem;
+  margin-top: 1.875rem;
 }
 
 /* ==========================================================================
@@ -382,7 +382,7 @@ body.is-locked { overflow: hidden; }
    ========================================================================== */
 .cards {
   display: grid;
-  gap: 1.5rem;
+  gap: 1.125rem;
   grid-template-columns: 1fr;
 }
 
@@ -406,10 +406,10 @@ body.is-locked { overflow: hidden; }
   stroke-width: 1.6;
   stroke-linecap: square;
   stroke-linejoin: miter;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.125rem;
 }
 .card__title { font-size: var(--text-xl); margin-bottom: 0.75rem; }
-.card__text  { margin-bottom: 1.5rem; }
+.card__text  { margin-bottom: 1.125rem; }
 
 .card__list {
   border-top: 1px solid var(--line);
@@ -435,7 +435,7 @@ body.is-locked { overflow: hidden; }
    ========================================================================== */
 .work-grid {
   display: grid;
-  gap: clamp(1.75rem, 4vw, 2.5rem);
+  gap: clamp(1.5rem, 3vw, 2rem);
   grid-template-columns: 1fr;
 }
 
@@ -514,8 +514,8 @@ img.work-card__shot {
    read as one continuous line; the text is inset with padding instead. */
 .step__body {
   border-top: 1px solid var(--line);
-  padding-top: 1.25rem;
-  padding-bottom: 2rem;
+  padding-top: 1rem;
+  padding-bottom: 1.5rem;
   padding-right: clamp(1rem, 2vw, 2rem);
 }
 .step:last-child .step__body { padding-bottom: 0; padding-right: 0; }
@@ -543,13 +543,13 @@ img.work-card__shot {
 .about {
   display: grid;
   grid-template-columns: 1fr;
-  gap: clamp(2.5rem, 5vw, 4rem);
+  gap: clamp(2rem, 4vw, 3rem);
 }
 .about__text + .about__text { margin-top: 1.125rem; }
 .about__text { max-width: 42ch; }
 .about .section__title { margin-bottom: 1.5rem; }
 
-.founders { display: grid; gap: 1.5rem; align-content: start; }
+.founders { display: grid; gap: 1.125rem; align-content: start; }
 
 .founder {
   display: flex;
@@ -589,15 +589,15 @@ img.founder__photo { object-fit: cover; }
 .contact {
   display: grid;
   grid-template-columns: 1fr;
-  gap: clamp(2.5rem, 5vw, 4.5rem);
+  gap: clamp(2rem, 4vw, 3.25rem);
 }
 
-.contact__details { margin-top: 2.5rem; }
+.contact__details { margin-top: 1.75rem; }
 .contact__details li {
   display: flex;
   gap: 1rem;
   align-items: flex-start;
-  padding-block: 1.25rem;
+  padding-block: 1rem;
   border-top: 1px solid var(--line);
 }
 .contact__icon {
@@ -693,14 +693,14 @@ img.founder__photo { object-fit: cover; }
 .site-footer {
   background: var(--ink);
   color: #B8B8B8;
-  padding-block: clamp(3rem, 6vw, 5rem) 2rem;
+  padding-block: clamp(2.25rem, 4vw, 3.25rem) 1.5rem;
   --focus: #FFFFFF;
 }
 .site-footer__top {
   display: grid;
   grid-template-columns: 1fr;
-  gap: clamp(2.5rem, 5vw, 4rem);
-  padding-bottom: clamp(2.5rem, 5vw, 4rem);
+  gap: clamp(2rem, 4vw, 3rem);
+  padding-bottom: clamp(2rem, 4vw, 3rem);
 }
 .site-footer__text {
   margin-top: 1.5rem;
@@ -840,7 +840,7 @@ img.founder__photo { object-fit: cover; }
 .page-head {
   background: var(--surface);
   border-bottom: 1px solid var(--line);
-  padding-block: clamp(3rem, 7vw, 5rem) clamp(2rem, 4vw, 3rem);
+  padding-block: clamp(2rem, 4.5vw, 3.25rem) clamp(1.5rem, 3vw, 2rem);
 }
 .page-head__title { font-size: var(--text-3xl); max-width: 22ch; }
 .page-head__lede {
@@ -867,8 +867,8 @@ img.founder__photo { object-fit: cover; }
 /* --- Legal layout: contents list + reading column ------------------------ */
 .legal {
   display: grid;
-  gap: clamp(2.5rem, 5vw, 3.5rem);
-  padding-block: clamp(2.5rem, 6vw, 4.5rem);
+  gap: clamp(2rem, 4vw, 3rem);
+  padding-block: clamp(1.75rem, 4vw, 3rem);
 }
 
 .toc {
@@ -898,7 +898,7 @@ img.founder__photo { object-fit: cover; }
    scroll-margin here as well would stack the two and overshoot. */
 .prose h2 {
   font-size: var(--text-2xl);
-  margin-top: clamp(2.5rem, 5vw, 3.5rem);
+  margin-top: clamp(1.875rem, 3.5vw, 2.5rem);
 }
 .prose h3 {
   font-size: var(--text-lg);
@@ -974,13 +974,13 @@ img.founder__photo { object-fit: cover; }
    One product per row: screenshot, then the copy beneath it. Becomes two
    columns from 860px so the shot and the feature list sit side by side.
    ========================================================================== */
-.products { display: grid; gap: clamp(3rem, 6vw, 5rem); }
+.products { display: grid; gap: clamp(2rem, 4vw, 3.25rem); }
 
 .product {
   display: grid;
   gap: clamp(1.5rem, 3vw, 2.5rem);
   align-items: start;
-  padding-bottom: clamp(3rem, 6vw, 5rem);
+  padding-bottom: clamp(2rem, 4vw, 3.25rem);
   border-bottom: 1px solid var(--line);
 }
 .product:last-child { padding-bottom: 0; border-bottom: 0; }
@@ -989,7 +989,7 @@ img.founder__photo { object-fit: cover; }
 .product__lede {
   font-size: var(--text-lg);
   max-width: 42ch;
-  margin-bottom: 1.75rem;
+  margin-bottom: 1.25rem;
 }
 .product .card__list { border-top: 1px solid var(--line); }
 
@@ -998,7 +998,7 @@ img.founder__photo { object-fit: cover; }
   flex-wrap: wrap;
   align-items: center;
   gap: 0.875rem;
-  margin-top: 1.75rem;
+  margin-top: 1.5rem;
 }
 .product__note { margin-top: 1.25rem; font-size: var(--text-sm); }
 

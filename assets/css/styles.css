@@ -540,25 +540,29 @@ img.work-card__shot {
 /* ==========================================================================
    12. ABOUT
    ========================================================================== */
-.about {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: clamp(2rem, 4vw, 3rem);
-}
+/* The intro sits full width above the founder rows, rather than sharing a
+   two-column grid with them. */
+.about__intro { margin-bottom: clamp(1.75rem, 3.5vw, 2.5rem); }
 .about__text + .about__text { margin-top: 1.125rem; }
 .about__text { max-width: 42ch; }
-.about .section__title { margin-bottom: 1.5rem; }
+.about__intro .section__title { margin-bottom: 1.5rem; }
 
+/* One founder per row, full width of the page. */
 .founders { display: grid; gap: 1.125rem; align-content: start; }
 
 .founder {
   display: flex;
-  gap: 1.25rem;
-  align-items: flex-start;
-  padding: 1.5rem;
+  gap: clamp(1.25rem, 3vw, 2.25rem);
+  align-items: center;
+  padding: clamp(1.25rem, 2.5vw, 1.875rem);
   border: 1px solid var(--line);
   border-radius: var(--radius);
 }
+/* The text takes the remaining width, which pins the photo to one edge */
+.founder > div { flex: 1; min-width: 0; }
+/* Second row mirrors the first: portrait on the right instead of the left */
+.founder:nth-child(even) { flex-direction: row-reverse; }
+
 .founder__photo {
   flex: none;
   width: 64px; height: 64px;
@@ -568,6 +572,10 @@ img.work-card__shot {
   display: grid;
   place-items: center;
   overflow: hidden;
+}
+/* A full-width row can carry a larger portrait than a narrow column could */
+@media (min-width: 640px) {
+  .founder__photo { width: 104px; height: 104px; }
 }
 .founder__photo svg { width: 26px; height: 26px; color: var(--line); }
 /* Replace with: <img class="founder__photo" src="..." alt="Portrait of [name]" /> */
@@ -581,7 +589,7 @@ img.founder__photo { object-fit: cover; }
   color: var(--muted);
   margin: 0.375rem 0 0.75rem;
 }
-.founder__bio { font-size: var(--text-sm); line-height: 1.55; }
+.founder__bio { font-size: var(--text-sm); line-height: 1.55; max-width: 62ch; }
 
 /* ==========================================================================
    13. CONTACT
@@ -809,7 +817,6 @@ img.founder__photo { object-fit: cover; }
 
 @media (min-width: 860px) {
   .cards { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-  .about { grid-template-columns: 1fr 1fr; }
   .contact { grid-template-columns: 1fr 1fr; align-items: start; }
   .site-footer__top { grid-template-columns: 1.2fr 1.8fr; }
   /* Four groups now (Services, Products, Company, Legal). auto-fit lets them
@@ -1088,8 +1095,11 @@ img.founder__photo { object-fit: cover; }
    These two would look wrong on a tablet, so they stop well before 720px:
    the founder card still has ~660px to work with at that size. */
 @media (max-width: 520px) {
-  /* Stack the card, so the bio is not squeezed into a ~150px column */
-  .founder { flex-direction: column; gap: 1rem; padding: 1.25rem; }
+  /* Stack the card, so the bio is not squeezed into a ~150px column.
+     The :nth-child selector must be repeated here — it outranks a bare
+     .founder rule and would otherwise keep the second row reversed. */
+  .founder,
+  .founder:nth-child(even) { flex-direction: column; gap: 1rem; padding: 1.25rem; }
 
   /* Full-width buttons are far easier to hit than two side by side */
   .hero__actions { gap: 0.75rem; }

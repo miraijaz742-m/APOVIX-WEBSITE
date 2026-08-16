@@ -24,10 +24,13 @@ export const RECAPTCHA_SITE_KEY = '6LfyI4ktAAAAAM3_kwxVyJLZeIqpwVe84ZWrvBET';
  * Returns true when it was actually attached.
  */
 export async function attachAppCheck(app) {
-  if (!RECAPTCHA_SITE_KEY) return false;      // not configured yet
+  if (!RECAPTCHA_SITE_KEY) {
+    exposeProbe({ configured: false, attached: false });
+    return false;                             // not configured yet
+  }
 
   try {
-    const { initializeAppCheck, ReCaptchaV3Provider } =
+    const { initializeAppCheck, ReCaptchaV3Provider, getToken } =
       await import('https://www.gstatic.com/firebasejs/11.6.1/firebase-app-check.js');
 
     // Local development has no verifiable domain. Firebase prints a debug
@@ -39,15 +42,61 @@ export async function attachAppCheck(app) {
       self.FIREBASE_APPCHECK_DEBUG_TOKEN = true;
     }
 
-    initializeAppCheck(app, {
+    const appCheck = initializeAppCheck(app, {
       provider: new ReCaptchaV3Provider(RECAPTCHA_SITE_KEY),
       isTokenAutoRefreshEnabled: true
     });
+
+    exposeProbe({ configured: true, attached: true, appCheck, getToken });
     return true;
   } catch (err) {
     // Never let this break the page. Before enforcement is switched on a
     // failure here costs nothing; after it, requests fail loudly anyway.
     console.warn('App Check not attached:', err);
+    exposeProbe({ configured: true, attached: false, error: String(err) });
     return false;
   }
+}
+
+/**
+ * A hand-check you can run from the browser console:
+ *
+ *     await apovixAppCheck.test()
+ *
+ * Asking Firebase for a token is the only way to know the whole chain works —
+ * site key, registered domain, and the secret key in the console all have to
+ * line up before one is issued. Reveals nothing a visitor could not already
+ * obtain; the token is attached to every request the page makes anyway, and
+ * only a preview of it is printed.
+ */
+function exposeProbe(state) {
+  window.apovixAppCheck = {
+    configured: state.configured,
+    attached: state.attached,
+    error: state.error || null,
+
+    async test() {
+      if (!state.configured) {
+        return { ok: false, reason: 'No site key set in assets/js/appcheck.js' };
+      }
+      if (!state.attached) {
+        return { ok: false, reason: 'App Check failed to attach', error: state.error };
+      }
+      try {
+        const result = await state.getToken(state.appCheck, /* forceRefresh */ true);
+        return {
+          ok: true,
+          message: 'App Check is issuing tokens — the chain works.',
+          tokenPreview: result.token.slice(0, 12) + '…(' + result.token.length + ' chars)'
+        };
+      } catch (err) {
+        return {
+          ok: false,
+          reason: 'Firebase refused to issue a token',
+          code: err.code || null,
+          error: err.message
+        };
+      }
+    }
+  };
 }

@@ -43,7 +43,7 @@
         ]
       },
       {
-        "comment": "The CSS and JS filenames are not fingerprinted, so a max-age of any length serves a stale build after every deploy — the browser will not even ask. max-age=0 makes it revalidate each load, which costs a 304 and nothing else.",
+        "comment": "The CSS and JS filenames are not fingerprinted, so a max-age of any length serves a stale build after every deploy \u2014 the browser will not even ask. max-age=0 makes it revalidate each load, which costs a 304 and nothing else.",
         "source": "**/*.@(css|js)",
         "headers": [
           {
@@ -53,13 +53,25 @@
         ]
       },
       {
-        "comment": "The admin panel must never be indexed or cached by a shared proxy. Access itself is enforced by Firebase Auth plus the /admins check in firestore.rules — these headers only keep it out of search results and shared caches.",
+        "comment": "The admin panel must never be indexed or cached by a shared proxy. Access itself is enforced by Firebase Auth plus the /admins check in firestore.rules \u2014 these headers only keep it out of search results and shared caches.",
         "source": "/admin/**",
         "headers": [
-          { "key": "X-Robots-Tag", "value": "noindex, nofollow" },
-          { "key": "Cache-Control", "value": "private, no-store" },
-          { "key": "X-Frame-Options", "value": "DENY" },
-          { "key": "Referrer-Policy", "value": "no-referrer" }
+          {
+            "key": "X-Robots-Tag",
+            "value": "noindex, nofollow"
+          },
+          {
+            "key": "Cache-Control",
+            "value": "private, no-store"
+          },
+          {
+            "key": "X-Frame-Options",
+            "value": "DENY"
+          },
+          {
+            "key": "Referrer-Policy",
+            "value": "no-referrer"
+          }
         ]
       }
     ]
@@ -67,5 +79,17 @@
   "firestore": {
     "rules": "firestore.rules",
     "indexes": "firestore.indexes.json"
-  }
+  },
+  "functions": [
+    {
+      "source": "functions",
+      "codebase": "default",
+      "ignore": [
+        "node_modules",
+        ".git",
+        "firebase-debug.log",
+        "*.local"
+      ]
+    }
+  ]
 }

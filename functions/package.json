@@ -1,0 +1,18 @@
+{
+  "name": "apovix-functions",
+  "description": "Cloud Functions for the Apovix website — anything that needs a secret",
+  "private": true,
+  "engines": {
+    "node": "22"
+  },
+  "main": "index.js",
+  "scripts": {
+    "serve": "firebase emulators:start --only functions",
+    "logs": "firebase functions:log"
+  },
+  "dependencies": {
+    "firebase-admin": "^13.0.2",
+    "firebase-functions": "^7.3.2",
+    "nodemailer": "^6.10.0"
+  }
+}

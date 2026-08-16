@@ -4,6 +4,9 @@
     "ignore": [
       "firebase.json",
       "**/.*",
+      "**/.*/**",
+      ".git/**",
+      ".github/**",
       "**/node_modules/**",
       "README.md",
       "APOVIX.zip",

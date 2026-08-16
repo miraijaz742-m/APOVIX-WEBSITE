@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Your account — Apovix Technologies</title>
+  <meta name="theme-color" content="#FFFFFF" />
+
+  <link rel="icon" href="assets/img/favicon.png" type="image/png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/css/styles.css" />
+  <script>document.documentElement.classList.add('js');</script>
+</head>
+<body>
+
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="site-header" id="top" data-header>
+    <div class="container site-header__inner">
+      <a class="logo" href="index.html" aria-label="Apovix Technologies — home">
+        <img class="logo__mark" src="assets/img/logo-mark.png" alt="" width="512" height="497" />
+        <span class="logo__word">APOVIX</span>
+      </a>
+      <nav class="site-nav" aria-label="Primary">
+        <ul class="site-nav__list">
+          <li><a href="index.html#services">Services</a></li>
+          <li><a href="products.html">Products</a></li>
+          <li><a href="index.html#work">Work</a></li>
+          <li><a href="index.html#process">Process</a></li>
+          <li><a href="about.html">About</a></li>
+          <li><a href="account.html" aria-current="page">Account</a></li>
+        </ul>
+      </nav>
+      <a class="btn btn--primary site-header__cta" href="index.html#contact">Start a project</a>
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="mobile-menu" data-menu-open>
+        <span class="menu-toggle__bars" aria-hidden="true"><span></span><span></span></span>
+        <span class="sr-only">Open menu</span>
+      </button>
+    </div>
+  </header>
+
+  <div class="mobile-menu" id="mobile-menu" data-menu hidden>
+    <div class="mobile-menu__bar container">
+      <a class="logo" href="index.html" data-menu-link aria-label="Apovix Technologies — home">
+        <img class="logo__mark" src="assets/img/logo-mark.png" alt="" width="512" height="497" />
+        <span class="logo__word">APOVIX</span>
+      </a>
+      <button class="menu-toggle" type="button" data-menu-close>
+        <span class="menu-toggle__x" aria-hidden="true"></span>
+        <span class="sr-only">Close menu</span>
+      </button>
+    </div>
+    <nav class="mobile-menu__nav container" aria-label="Mobile">
+      <ul>
+        <li><a href="index.html#services" data-menu-link>Services</a></li>
+        <li><a href="products.html" data-menu-link>Products</a></li>
+        <li><a href="index.html#work" data-menu-link>Work</a></li>
+        <li><a href="index.html#process" data-menu-link>Process</a></li>
+        <li><a href="about.html" data-menu-link>About</a></li>
+        <li><a href="account.html" data-menu-link>Account</a></li>
+      </ul>
+      <a class="btn btn--primary btn--block" href="index.html#contact" data-menu-link>Start a project</a>
+    </nav>
+  </div>
+
+
+  <main id="main">
+    <section class="section">
+      <div class="container auth-wrap">
+        <div class="auth-card">
+
+          <p class="eyebrow">Your account</p>
+          <h1 class="auth-card__title" id="greeting">Your details</h1>
+          <p class="auth-card__lede">
+            These are the details we hold about you. Change anything and press save.
+          </p>
+
+          <div class="notice notice--error" id="error" hidden></div>
+          <div class="notice notice--ok" id="ok" hidden></div>
+          <div class="notice notice--warn" id="verify" hidden></div>
+
+          <form class="form form--plain" id="account-form" novalidate>
+            <div class="field">
+              <label for="acc-email">Email</label>
+              <input id="acc-email" type="email" disabled />
+              <p class="field__hint">Your email is fixed to the account you signed in with.</p>
+            </div>
+            <div class="field">
+              <label for="acc-name">Full name <span class="req">*</span></label>
+              <input id="acc-name" name="name" type="text" autocomplete="name" />
+            </div>
+            <div class="field">
+              <label for="acc-phone">Phone number <span class="req">*</span></label>
+              <input id="acc-phone" name="phone" type="tel" autocomplete="tel" />
+            </div>
+            <div class="field">
+              <label for="acc-company">Business or organisation</label>
+              <input id="acc-company" name="company" type="text" autocomplete="organization" />
+            </div>
+            <div class="field">
+              <label for="acc-city">City</label>
+              <input id="acc-city" name="city" type="text" autocomplete="address-level2" />
+            </div>
+            <div class="field">
+              <label for="acc-notes">What do you need built?</label>
+              <textarea id="acc-notes" name="notes" rows="4"></textarea>
+            </div>
+            <button class="btn btn--primary btn--block" type="submit" id="save">Save changes</button>
+          </form>
+
+          <p class="auth-card__foot">
+            <button class="linkish" type="button" id="signout">Sign out</button>
+            &nbsp;·&nbsp;
+            <a href="privacy-policy.html#rights">Your data rights</a>
+          </p>
+
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="assets/js/main.js" defer></script>
+
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js';
+    import { getAuth, onAuthStateChanged, signOut, sendEmailVerification }
+      from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
+    import { getFirestore, doc, getDoc, updateDoc, serverTimestamp }
+      from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
+
+    const app = initializeApp({
+      apiKey: 'AIzaSyBhAN3PcT-h2F_mNuwPC7wQhKmj9Bo0dGU',
+      authDomain: 'apovix-website.firebaseapp.com',
+      projectId: 'apovix-website',
+      storageBucket: 'apovix-website.firebasestorage.app',
+      messagingSenderId: '847136258714',
+      appId: '1:847136258714:web:e32665bd9525f1c9ddbd23'
+    });
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    const $ = (id) => document.getElementById(id);
+    const errBox = $('error'), okBox = $('ok'), save = $('save');
+    let uid = null, record = null;
+
+    $('signout').addEventListener('click', async () => {
+      await signOut(auth);
+      window.location.replace('index.html');
+    });
+
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) { window.location.replace('login.html'); return; }
+      uid = user.uid;
+
+      let snap;
+      try {
+        snap = await getDoc(doc(db, 'users', uid));
+      } catch (err) {
+        errBox.textContent = 'Could not load your details: ' + err.message;
+        errBox.hidden = false;
+        return;
+      }
+      if (!snap.exists()) { window.location.replace('register.html'); return; }
+
+      record = snap.data();
+      $('greeting').textContent = 'Hello, ' + (record.name || '').split(' ')[0] + '.';
+      $('acc-email').value = record.email || user.email || '';
+      $('acc-name').value = record.name || '';
+      $('acc-phone').value = record.phone || '';
+      $('acc-company').value = record.company || '';
+      $('acc-city').value = record.city || '';
+      $('acc-notes').value = record.notes || '';
+
+      if (!user.emailVerified && record.provider === 'password') {
+        $('verify').innerHTML =
+          'Your email address is not confirmed yet. ' +
+          '<button class="linkish" type="button" id="resend">Send the link again</button>';
+        $('verify').hidden = false;
+        $('resend').addEventListener('click', async () => {
+          try {
+            await sendEmailVerification(user);
+            $('verify').textContent = 'Sent. Check your inbox.';
+          } catch (err) {
+            $('verify').textContent = 'Could not send: ' + err.message;
+          }
+        });
+      }
+
+      if (record.status && record.status !== 'active') {
+        errBox.textContent = 'This account is currently ' + record.status +
+          '. Please contact us if you think that is a mistake.';
+        errBox.hidden = false;
+      }
+    });
+
+    $('account-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      errBox.hidden = true; okBox.hidden = true;
+
+      const name = $('acc-name').value.trim();
+      const phone = $('acc-phone').value.trim();
+      if (name.length < 2) { errBox.textContent = 'Please enter your name.'; errBox.hidden = false; return; }
+      if (!/^[+0-9][0-9\s\-()]{5,19}$/.test(phone)) {
+        errBox.textContent = 'Enter a phone number we can reach you on.'; errBox.hidden = false; return;
+      }
+
+      save.disabled = true; save.textContent = 'Saving…';
+      try {
+        // status, email and createdAt are deliberately not sent — the rules
+        // reject any update that changes them.
+        await updateDoc(doc(db, 'users', uid), {
+          name: name,
+          phone: phone,
+          company: $('acc-company').value.trim(),
+          city: $('acc-city').value.trim(),
+          notes: $('acc-notes').value.trim(),
+          updatedAt: serverTimestamp()
+        });
+        okBox.textContent = 'Saved.';
+        okBox.hidden = false;
+      } catch (err) {
+        errBox.textContent = err.code === 'permission-denied'
+          ? 'That change was refused. If your account is suspended you cannot edit it.'
+          : 'Could not save: ' + err.message;
+        errBox.hidden = false;
+      } finally {
+        save.disabled = false; save.textContent = 'Save changes';
+      }
+    });
+  </script>
+</body>
+</html>

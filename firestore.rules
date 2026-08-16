@@ -66,6 +66,49 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    // --- registered website users ----------------------------------------
+    // A visitor who signs up gets exactly one document, keyed by their own
+    // Auth UID. They may read and edit their own; they can never see another
+    // person's, list the collection, or promote themselves.
+    function validUser(d) {
+      return d.keys().hasOnly(
+               ['name','email','phone','company','city','notes','provider',
+                'status','createdAt','updatedAt','emailVerified'])
+        && d.keys().hasAll(['name','email','phone','createdAt','status'])
+        && d.name  is string && d.name.size()  >= 2 && d.name.size()  <= 100
+        && d.email is string && d.email.size() >= 5 && d.email.size() <= 200
+        && d.phone is string && d.phone.size() >= 6 && d.phone.size() <= 20
+        && (!('company' in d.keys()) || (d.company is string && d.company.size() <= 150))
+        && (!('city'    in d.keys()) || (d.city    is string && d.city.size()    <= 100))
+        && (!('notes'   in d.keys()) || (d.notes   is string && d.notes.size()   <= 1000))
+        && d.status is string;
+    }
+
+    match /users/{uid} {
+      allow create: if isSignedIn()
+                    && request.auth.uid == uid
+                    && validUser(request.resource.data)
+                    // Nobody signs themselves up as anything but active.
+                    && request.resource.data.status == 'active'
+                    && request.resource.data.createdAt == request.time
+                    // The email on the record must be the one they signed in with.
+                    && request.resource.data.email == request.auth.token.email;
+
+      allow read: if isAdmin() || (isSignedIn() && request.auth.uid == uid);
+
+      // Owners of a record may edit their details, never their status.
+      allow update: if isSignedIn()
+                    && request.auth.uid == uid
+                    && request.resource.data.status == resource.data.status
+                    && request.resource.data.email  == resource.data.email
+                    && request.resource.data.createdAt == resource.data.createdAt
+                    && validUser(request.resource.data);
+
+      // Admins may suspend or annotate an account, and delete it.
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
     // --- admin roster -----------------------------------------------------
     // Membership of this collection IS the permission. Only an owner may
     // grant or revoke it, and an owner cannot remove their own record — that

@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Registered users — Apovix Admin</title>
+  <link rel="icon" href="../assets/img/favicon.png" type="image/png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/css/admin.css" />
+</head>
+<body data-loading>
+
+  <div class="admin-shell">
+
+    <aside class="admin-side">
+      <a class="admin-side__brand" href="dashboard.html">
+        <img src="../assets/img/logo-mark.png" alt="" />
+        <span>APOVIX<span class="admin-side__tag">Admin</span></span>
+      </a>
+      <nav class="admin-nav" aria-label="Admin sections">
+        <ul>
+          <li><a href="dashboard.html">Dashboard</a></li>
+          <li><a href="enquiries.html">Enquiries</a></li>
+          <li><a href="members.html">Registered users</a></li>
+          <li><a href="content.html">Site content</a></li>
+          <li><a href="users.html">Admin access</a></li>
+        </ul>
+      </nav>
+      <div class="admin-side__foot">
+        <p class="admin-side__who" data-admin-name>—</p>
+        <span class="admin-side__role" data-admin-role>—</span>
+        <div class="admin-side__links">
+          <a href="../index.html" target="_blank" rel="noopener">View live site ↗</a>
+          <button type="button" data-signout>Sign out</button>
+        </div>
+      </div>
+    </aside>
+
+    <main class="admin-main">
+
+      <header class="admin-head">
+        <h1>Registered users</h1>
+        <p>People who created an account on the website.</p>
+      </header>
+
+      <div class="notice notice--error" id="error" hidden></div>
+      <div class="notice notice--ok" id="ok" hidden></div>
+
+      <div class="stats">
+        <div class="stat">
+          <p class="stat__label">Total</p>
+          <p class="stat__value" data-stat="total">—</p>
+        </div>
+        <div class="stat">
+          <p class="stat__label">Active</p>
+          <p class="stat__value" data-stat="active">—</p>
+        </div>
+        <div class="stat">
+          <p class="stat__label">Suspended</p>
+          <p class="stat__value" data-stat="suspended">—</p>
+        </div>
+        <div class="stat">
+          <p class="stat__label">Last 30 days</p>
+          <p class="stat__value" data-stat="month">—</p>
+        </div>
+      </div>
+
+      <section class="panel">
+        <div class="panel__head">
+          <h2>All accounts</h2>
+          <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+            <label class="sr-only" for="search">Search</label>
+            <input id="search" type="search" placeholder="Search name, email, phone…"
+                   style="padding:.375rem .625rem;border:1px solid var(--line);border-radius:var(--radius);min-width:14rem" />
+            <button class="btn btn--ghost btn--sm" type="button" id="export">Export CSV</button>
+            <button class="btn btn--ghost btn--sm" type="button" id="refresh">Refresh</button>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Joined</th><th>Name</th><th>Phone</th><th>Business</th>
+                <th>Sign-in</th><th>Status</th><th><span class="sr-only">Actions</span></th>
+              </tr>
+            </thead>
+            <tbody id="rows">
+              <tr><td colspan="7" class="empty">Loading…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <script type="module">
+    import { db } from './assets/js/firebase-init.js';
+    import { requireAdmin, wireSignOut, markActiveNav, esc, formatDate }
+      from './assets/js/auth-guard.js';
+    import { collection, getDocs, doc, updateDoc, deleteDoc, serverTimestamp, Timestamp }
+      from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
+
+    await requireAdmin();
+    wireSignOut();
+    markActiveNav();
+
+    const rows = document.getElementById('rows');
+    const errBox = document.getElementById('error');
+    const okBox = document.getElementById('ok');
+    const search = document.getElementById('search');
+    let users = [];
+
+    function fail(m) { errBox.textContent = m; errBox.hidden = false; okBox.hidden = true; }
+    function done(m) { okBox.textContent = m; okBox.hidden = false; errBox.hidden = true; }
+    function setStat(k, v) { document.querySelector('[data-stat="' + k + '"]').textContent = v; }
+
+    async function load() {
+      rows.innerHTML = '<tr><td colspan="7" class="empty">Loading…</td></tr>';
+      try {
+        const snap = await getDocs(collection(db, 'users'));
+        users = snap.docs.map((d) => ({ uid: d.id, ...d.data() }))
+          .sort((a, b) => {
+            const at = a.createdAt ? a.createdAt.toMillis() : 0;
+            const bt = b.createdAt ? b.createdAt.toMillis() : 0;
+            return bt - at;
+          });
+
+        const monthAgo = Timestamp.fromMillis(Date.now() - 30 * 24 * 60 * 60 * 1000);
+        setStat('total', users.length);
+        setStat('active', users.filter((u) => (u.status || 'active') === 'active').length);
+        setStat('suspended', users.filter((u) => u.status === 'suspended').length);
+        setStat('month', users.filter((u) => u.createdAt && u.createdAt >= monthAgo).length);
+
+        render();
+      } catch (err) {
+        rows.innerHTML = '<tr><td colspan="7" class="empty">Could not load.</td></tr>';
+        fail(err.code === 'permission-denied'
+          ? 'Firestore refused the read — deploy firestore.rules, or check your admin record.'
+          : 'Could not reach Firestore: ' + err.message);
+      }
+    }
+
+    function matching() {
+      const q = search.value.trim().toLowerCase();
+      if (!q) return users;
+      return users.filter((u) =>
+        [u.name, u.email, u.phone, u.company, u.city].filter(Boolean)
+          .join(' ').toLowerCase().includes(q));
+    }
+
+    function render() {
+      const list = matching();
+      if (!list.length) {
+        rows.innerHTML = '<tr><td colspan="7" class="empty">' +
+          (users.length ? 'Nothing matches that search.'
+                        : 'Nobody has registered yet. Accounts appear here as soon as someone signs up.') +
+          '</td></tr>';
+        return;
+      }
+
+      rows.innerHTML = list.map((u) => {
+        const status = esc(u.status || 'active');
+        const pill = status === 'active' ? 'replied' : 'archived';
+        return '' +
+        '<tr>' +
+          '<td class="num">' + formatDate(u.createdAt) + '</td>' +
+          '<td><strong>' + esc(u.name) + '</strong><br>' +
+              '<a href="mailto:' + esc(u.email) + '">' + esc(u.email) + '</a>' +
+              (u.emailVerified === false && u.provider === 'password'
+                ? ' <span class="pill pill--new">unverified</span>' : '') +
+          '</td>' +
+          '<td><a href="tel:' + esc(String(u.phone || '').replace(/\s/g, '')) + '">' + esc(u.phone) + '</a></td>' +
+          '<td>' + esc(u.company || '—') + (u.city ? '<br><span class="num">' + esc(u.city) + '</span>' : '') + '</td>' +
+          '<td>' + esc(u.provider === 'google' ? 'Google' : 'Password') + '</td>' +
+          '<td><span class="pill pill--' + pill + '">' + status + '</span></td>' +
+          '<td><button class="btn btn--ghost btn--sm" type="button" data-open="' + esc(u.uid) + '">Open</button></td>' +
+        '</tr>' +
+        '<tr hidden data-detail="' + esc(u.uid) + '">' +
+          '<td colspan="7">' +
+            '<div class="detail">' +
+              (u.notes ? '<div class="detail__row"><span class="detail__key">What they need</span>' +
+                '<p class="detail__val detail__msg">' + esc(u.notes) + '</p></div>' : '') +
+              '<div class="detail__row"><span class="detail__key">User ID</span>' +
+                '<p class="detail__val">' + esc(u.uid) + '</p></div>' +
+              '<div class="form-actions">' +
+                '<a class="btn btn--primary btn--sm" href="mailto:' + esc(u.email) + '">Email them</a>' +
+                (status === 'active'
+                  ? '<button class="btn btn--ghost btn--sm" type="button" data-status="suspended" data-id="' + esc(u.uid) + '">Suspend</button>'
+                  : '<button class="btn btn--ghost btn--sm" type="button" data-status="active" data-id="' + esc(u.uid) + '">Reactivate</button>') +
+                '<button class="btn btn--danger btn--sm" type="button" data-delete="' + esc(u.uid) + '">Delete record</button>' +
+              '</div>' +
+            '</div>' +
+          '</td>' +
+        '</tr>';
+      }).join('');
+    }
+
+    rows.addEventListener('click', async (e) => {
+      const openBtn = e.target.closest('[data-open]');
+      if (openBtn) {
+        const row = rows.querySelector('[data-detail="' + openBtn.dataset.open + '"]');
+        row.hidden = !row.hidden;
+        openBtn.textContent = row.hidden ? 'Open' : 'Close';
+        return;
+      }
+
+      const statusBtn = e.target.closest('[data-status]');
+      if (statusBtn) {
+        statusBtn.disabled = true;
+        try {
+          await updateDoc(doc(db, 'users', statusBtn.dataset.id), {
+            status: statusBtn.dataset.status,
+            updatedAt: serverTimestamp()
+          });
+          done('Status updated.');
+          await load();
+        } catch (err) {
+          statusBtn.disabled = false;
+          fail('Could not update: ' + err.message);
+        }
+        return;
+      }
+
+      const delBtn = e.target.closest('[data-delete]');
+      if (delBtn) {
+        if (!window.confirm(
+          'Delete this user record permanently?\n\n' +
+          'Their Firebase Authentication login is NOT removed by this — delete that ' +
+          'separately in the Firebase console if you want the account gone entirely.')) return;
+        delBtn.disabled = true;
+        try {
+          await deleteDoc(doc(db, 'users', delBtn.dataset.delete));
+          done('Record deleted.');
+          await load();
+        } catch (err) {
+          delBtn.disabled = false;
+          fail('Could not delete: ' + err.message);
+        }
+      }
+    });
+
+    document.getElementById('export').addEventListener('click', () => {
+      const list = matching();
+      if (!list.length) return fail('Nothing to export.');
+      const cols = ['name','email','phone','company','city','provider','status','notes'];
+      const cell = (v) => '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"';
+      const csv = [
+        ['joined'].concat(cols).join(','),
+        ...list.map((u) => [cell(formatDate(u.createdAt))]
+          .concat(cols.map((c) => cell(u[c]))).join(','))
+      ].join('\r\n');
+
+      const url = URL.createObjectURL(new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8' }));
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'apovix-users-' + new Date().toISOString().slice(0, 10) + '.csv';
+      document.body.appendChild(a); a.click(); a.remove();
+      URL.revokeObjectURL(url);
+    });
+
+    search.addEventListener('input', render);
+    document.getElementById('refresh').addEventListener('click', load);
+    await load();
+  </script>
+</body>
+</html>

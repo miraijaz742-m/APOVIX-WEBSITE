@@ -10,12 +10,10 @@
 // The site key below is PUBLIC — reCAPTCHA site keys are meant to be in the
 // page. The matching secret key lives only in the Firebase console.
 
-// ---------------------------------------------------------------------------
-// PASTE THE reCAPTCHA SITE KEY HERE.
-// Firebase console -> App Check -> Apps -> the web app -> reCAPTCHA v3.
-// Leave it empty and App Check simply stays off; nothing else breaks.
-// ---------------------------------------------------------------------------
-export const RECAPTCHA_SITE_KEY = '';
+// The reCAPTCHA v3 SITE key. Public by design — it is meant to sit in the
+// page, and it grants nothing on its own. The matching SECRET key lives only
+// in the Firebase console and must never appear in this repository.
+export const RECAPTCHA_SITE_KEY = '6LfyI4ktAAAAAM3_kwxVyJLZeIqpwVe84ZWrvBET';
 
 /**
  * Attach App Check to a Firebase app.

@@ -31,7 +31,7 @@
           <li><a href="index.html#work">Work</a></li>
           <li><a href="index.html#process">Process</a></li>
           <li><a href="about.html">About</a></li>
-          <li><a href="login.html">Sign in</a></li>
+          <li data-auth-nav><a href="login.html">Sign in</a></li>
         </ul>
       </nav>
       <a class="btn btn--primary site-header__cta" href="index.html#contact">Start a project</a>
@@ -60,7 +60,7 @@
         <li><a href="index.html#work" data-menu-link>Work</a></li>
         <li><a href="index.html#process" data-menu-link>Process</a></li>
         <li><a href="about.html" data-menu-link>About</a></li>
-        <li><a href="login.html" data-menu-link>Sign in</a></li>
+        <li data-auth-nav data-auth-nav-mobile><a href="login.html" data-menu-link>Sign in</a></li>
       </ul>
       <a class="btn btn--primary btn--block" href="index.html#contact" data-menu-link>Start a project</a>
     </nav>
@@ -113,8 +113,11 @@
             </div>
 
             <div class="signed-as" id="signed-as" hidden>
-              <span class="signed-as__who">
-                Signing up as <strong id="signed-as-email"></strong>
+              <span class="signed-as__id">
+                <span id="signed-as-avatar"></span>
+                <span class="signed-as__who">
+                  Signing up as <strong id="signed-as-email"></strong>
+                </span>
               </span>
               <button type="button" class="linkish" id="switch-account">Use a different account</button>
             </div>
@@ -172,26 +175,16 @@
   <script src="assets/js/main.js" defer></script>
 
   <script type="module">
-    import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js';
+    import { auth, db, avatarFor } from './assets/js/fb.js';
     import {
-      getAuth, createUserWithEmailAndPassword, signInWithPopup, signInWithRedirect,
+      createUserWithEmailAndPassword, signInWithPopup, signInWithRedirect,
       getRedirectResult, GoogleAuthProvider, onAuthStateChanged, signOut,
       sendEmailVerification, updateProfile
     } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
     import {
-      getFirestore, doc, getDoc, setDoc, serverTimestamp
+      doc, getDoc, setDoc, serverTimestamp
     } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
 
-    const app = initializeApp({
-      apiKey: 'AIzaSyBhAN3PcT-h2F_mNuwPC7wQhKmj9Bo0dGU',
-      authDomain: 'apovix-website.firebaseapp.com',
-      projectId: 'apovix-website',
-      storageBucket: 'apovix-website.firebasestorage.app',
-      messagingSenderId: '847136258714',
-      appId: '1:847136258714:web:e32665bd9525f1c9ddbd23'
-    });
-    const auth = getAuth(app);
-    const db = getFirestore(app);
 
     const $ = (id) => document.getElementById(id);
     const form = $('register-form');
@@ -232,6 +225,7 @@
       stepMethod.hidden = true;
       signedAs.hidden = false;
       $('signed-as-email').textContent = user.email;
+      $('signed-as-avatar').replaceChildren(avatarFor(user, 36));
       if (user.displayName && !$('reg-name').value) $('reg-name').value = user.displayName;
       $('reg-phone').focus();
     }
@@ -361,5 +355,6 @@
       try { await afterAuth(user); } catch (_) {}
     });
   </script>
+  <script type="module" src="assets/js/user-nav.js"></script>
 </body>
 </html>

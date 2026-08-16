@@ -1135,6 +1135,71 @@ img.founder__photo { object-fit: cover; }
 .signed-as__who strong { color: var(--ink); }
 .signed-as .linkish { font-size: var(--text-sm); white-space: nowrap; }
 
+/* --- Avatars ------------------------------------------------------------- */
+.avatar {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  overflow: hidden;
+}
+/* No Google photo — a brand-coloured disc with their initials instead */
+.avatar--initials {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--white);
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 0.8125rem;
+  letter-spacing: 0.02em;
+  line-height: 1;
+}
+
+/* The signed-in chip that replaces "Sign in" in the header */
+.user-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-decoration: none;
+  color: var(--body);
+  font-weight: 500;
+  transition: color .15s ease;
+}
+.user-chip:hover { color: var(--ink); }
+.user-chip__name { max-width: 9ch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.mobile-menu__nav .user-chip {
+  padding: 1.125rem 0;
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--ink);
+}
+.mobile-menu__nav .user-chip__name { max-width: none; }
+
+/* The account page's own heading avatar */
+.account-head {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+.account-head .avatar { width: 56px; height: 56px; font-size: 1.25rem; }
+.account-head__meta { min-width: 0; }
+.account-head__email {
+  font-size: var(--text-sm);
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+
+.signed-as .avatar { width: 36px; height: 36px; }
+.signed-as__id { display: flex; align-items: center; gap: 0.625rem; min-width: 0; }
+
 /* Two fields per row once there is room — keeps the form from reading as an
    endless single column. */
 .field-row { display: grid; gap: 0; }

@@ -31,7 +31,7 @@
           <li><a href="index.html#work">Work</a></li>
           <li><a href="index.html#process">Process</a></li>
           <li><a href="about.html">About</a></li>
-          <li><a href="account.html" aria-current="page">Account</a></li>
+          <li data-auth-nav><a href="account.html" aria-current="page">Account</a></li>
         </ul>
       </nav>
       <a class="btn btn--primary site-header__cta" href="index.html#contact">Start a project</a>
@@ -60,7 +60,7 @@
         <li><a href="index.html#work" data-menu-link>Work</a></li>
         <li><a href="index.html#process" data-menu-link>Process</a></li>
         <li><a href="about.html" data-menu-link>About</a></li>
-        <li><a href="account.html" data-menu-link>Account</a></li>
+        <li data-auth-nav data-auth-nav-mobile><a href="account.html" data-menu-link>Account</a></li>
       </ul>
       <a class="btn btn--primary btn--block" href="index.html#contact" data-menu-link>Start a project</a>
     </nav>
@@ -73,7 +73,15 @@
         <div class="auth-card">
 
           <p class="eyebrow">Your account</p>
-          <h1 class="auth-card__title" id="greeting">Your details</h1>
+
+          <div class="account-head">
+            <span id="account-avatar"></span>
+            <span class="account-head__meta">
+              <h1 class="auth-card__title" id="greeting" style="margin-bottom:.125rem">Your details</h1>
+              <span class="account-head__email" id="account-email"></span>
+            </span>
+          </div>
+
           <p class="auth-card__lede">
             These are the details we hold about you. Change anything and press save.
           </p>
@@ -129,22 +137,12 @@
   <script src="assets/js/main.js" defer></script>
 
   <script type="module">
-    import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js';
-    import { getAuth, onAuthStateChanged, signOut, sendEmailVerification }
+    import { auth, db, avatarFor } from './assets/js/fb.js';
+    import { onAuthStateChanged, signOut, sendEmailVerification }
       from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
-    import { getFirestore, doc, getDoc, updateDoc, serverTimestamp }
+    import { doc, getDoc, updateDoc, serverTimestamp }
       from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
 
-    const app = initializeApp({
-      apiKey: 'AIzaSyBhAN3PcT-h2F_mNuwPC7wQhKmj9Bo0dGU',
-      authDomain: 'apovix-website.firebaseapp.com',
-      projectId: 'apovix-website',
-      storageBucket: 'apovix-website.firebasestorage.app',
-      messagingSenderId: '847136258714',
-      appId: '1:847136258714:web:e32665bd9525f1c9ddbd23'
-    });
-    const auth = getAuth(app);
-    const db = getFirestore(app);
 
     const $ = (id) => document.getElementById(id);
     const errBox = $('error'), okBox = $('ok'), save = $('save');
@@ -170,6 +168,8 @@
       if (!snap.exists()) { window.location.replace('register.html'); return; }
 
       record = snap.data();
+      $('account-avatar').replaceChildren(avatarFor(user, 56));
+      $('account-email').textContent = record.email || user.email || '';
       $('greeting').textContent = 'Hello, ' + (record.name || '').split(' ')[0] + '.';
       $('acc-email').value = record.email || user.email || '';
       $('acc-name').value = record.name || '';
@@ -235,5 +235,6 @@
       }
     });
   </script>
+  <script type="module" src="assets/js/user-nav.js"></script>
 </body>
 </html>

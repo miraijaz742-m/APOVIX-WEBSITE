@@ -31,7 +31,7 @@
           <li><a href="index.html#work">Work</a></li>
           <li><a href="index.html#process">Process</a></li>
           <li><a href="about.html">About</a></li>
-          <li><a href="login.html" aria-current="page">Sign in</a></li>
+          <li data-auth-nav><a href="login.html" aria-current="page">Sign in</a></li>
         </ul>
       </nav>
       <a class="btn btn--primary site-header__cta" href="index.html#contact">Start a project</a>
@@ -60,7 +60,7 @@
         <li><a href="index.html#work" data-menu-link>Work</a></li>
         <li><a href="index.html#process" data-menu-link>Process</a></li>
         <li><a href="about.html" data-menu-link>About</a></li>
-        <li><a href="login.html" data-menu-link>Sign in</a></li>
+        <li data-auth-nav data-auth-nav-mobile><a href="login.html" data-menu-link>Sign in</a></li>
       </ul>
       <a class="btn btn--primary btn--block" href="index.html#contact" data-menu-link>Start a project</a>
     </nav>
@@ -118,24 +118,14 @@
   <script src="assets/js/main.js" defer></script>
 
   <script type="module">
-    import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js';
+    import { auth, db } from './assets/js/fb.js';
     import {
-      getAuth, signInWithEmailAndPassword, signInWithPopup, signInWithRedirect,
+      signInWithEmailAndPassword, signInWithPopup, signInWithRedirect,
       getRedirectResult, GoogleAuthProvider, onAuthStateChanged, sendPasswordResetEmail
     } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
-    import { getFirestore, doc, getDoc }
+    import { doc, getDoc }
       from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
 
-    const app = initializeApp({
-      apiKey: 'AIzaSyBhAN3PcT-h2F_mNuwPC7wQhKmj9Bo0dGU',
-      authDomain: 'apovix-website.firebaseapp.com',
-      projectId: 'apovix-website',
-      storageBucket: 'apovix-website.firebasestorage.app',
-      messagingSenderId: '847136258714',
-      appId: '1:847136258714:web:e32665bd9525f1c9ddbd23'
-    });
-    const auth = getAuth(app);
-    const db = getFirestore(app);
 
     const $ = (id) => document.getElementById(id);
     const errBox = $('error');
@@ -227,5 +217,6 @@
 
     onAuthStateChanged(auth, async (user) => { if (user) await route(user); });
   </script>
+  <script type="module" src="assets/js/user-nav.js"></script>
 </body>
 </html>

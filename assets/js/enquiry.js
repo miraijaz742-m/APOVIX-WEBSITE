@@ -9,20 +9,9 @@
 // visitor may create an enquiry that passes validation and nothing else.
 // They cannot read anyone else's.
 
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js';
-import { getFirestore, collection, addDoc, serverTimestamp }
+import { db } from './fb.js';
+import { collection, addDoc, serverTimestamp }
   from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
-
-const firebaseConfig = {
-  apiKey: 'AIzaSyBhAN3PcT-h2F_mNuwPC7wQhKmj9Bo0dGU',
-  authDomain: 'apovix-website.firebaseapp.com',
-  projectId: 'apovix-website',
-  storageBucket: 'apovix-website.firebasestorage.app',
-  messagingSenderId: '847136258714',
-  appId: '1:847136258714:web:e32665bd9525f1c9ddbd23'
-};
-
-const db = getFirestore(initializeApp(firebaseConfig));
 
 window.apovixSubmitEnquiry = function (payload) {
   return addDoc(collection(db, 'enquiries'), {

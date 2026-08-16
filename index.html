@@ -86,7 +86,7 @@
         <li><a href="#work" data-menu-link>Work</a></li>
         <li><a href="#process" data-menu-link>Process</a></li>
         <li><a href="#about" data-menu-link>About</a></li>
-        <li><a href="login.html" data-menu-link>Sign in</a></li>
+        <li data-auth-nav data-auth-nav-mobile><a href="login.html" data-menu-link>Sign in</a></li>
       </ul>
       <a class="btn btn--primary btn--block" href="#contact" data-menu-link>Start a project</a>
     </nav>
@@ -550,7 +550,7 @@
             <h2 class="site-footer__heading">Company</h2>
             <ul>
               <li><a href="about.html">About</a></li>
-          <li><a href="login.html">Sign in</a></li>
+          <li data-auth-nav><a href="login.html">Sign in</a></li>
               <li><a href="#work">Work</a></li>
               <li><a href="#process">Process</a></li>
               <li><a href="#contact">Contact</a></li>
@@ -586,6 +586,7 @@
   <!-- Sends the contact form to Firestore. Module, so it is deferred and
        optional: main.js falls back to logging if it does not load. -->
   <script type="module" src="assets/js/enquiry.js"></script>
+  <script type="module" src="assets/js/user-nav.js"></script>
 </body>
 
 </html>

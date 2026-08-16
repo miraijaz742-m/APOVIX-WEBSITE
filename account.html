@@ -138,98 +138,110 @@
 
   <script type="module">
     import { auth, db, avatarFor } from './assets/js/fb.js';
-    import { onAuthStateChanged, signOut, sendEmailVerification }
+    import { signOut, sendEmailVerification }
       from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
     import { doc, getDoc, updateDoc, serverTimestamp }
       from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
-
+    import { describeError, firstAuthState, onSignedOut, go, showNotice, hideNotice, withTimeout }
+      from './assets/js/auth-flow.js';
 
     const $ = (id) => document.getElementById(id);
     const errBox = $('error'), okBox = $('ok'), save = $('save');
-    let uid = null, record = null;
+    let uid = null;
 
     $('signout').addEventListener('click', async () => {
-      await signOut(auth);
-      window.location.replace('index.html');
+      try { await signOut(auth); } finally { go('index.html'); }
     });
 
-    onAuthStateChanged(auth, async (user) => {
-      if (!user) { window.location.replace('login.html'); return; }
+    // Loaded exactly once. The previous version reloaded on every auth-state
+    // firing - which includes hourly token refreshes - and overwrote whatever
+    // the visitor had typed but not yet saved.
+    const user = await firstAuthState(auth);
+
+    if (!user) {
+      go('login.html');
+    } else {
       uid = user.uid;
 
-      let snap;
+      let snap = null;
       try {
-        snap = await getDoc(doc(db, 'users', uid));
+        snap = await withTimeout(getDoc(doc(db, 'users', uid)), 15000, 'Loading your details');
       } catch (err) {
-        errBox.textContent = 'Could not load your details: ' + err.message;
-        errBox.hidden = false;
-        return;
-      }
-      if (!snap.exists()) { window.location.replace('register.html'); return; }
-
-      record = snap.data();
-      $('account-avatar').replaceChildren(avatarFor(user, 56));
-      $('account-email').textContent = record.email || user.email || '';
-      $('greeting').textContent = 'Hello, ' + (record.name || '').split(' ')[0] + '.';
-      $('acc-email').value = record.email || user.email || '';
-      $('acc-name').value = record.name || '';
-      $('acc-phone').value = record.phone || '';
-      $('acc-company').value = record.company || '';
-      $('acc-city').value = record.city || '';
-      $('acc-notes').value = record.notes || '';
-
-      if (!user.emailVerified && record.provider === 'password') {
-        $('verify').innerHTML =
-          'Your email address is not confirmed yet. ' +
-          '<button class="linkish" type="button" id="resend">Send the link again</button>';
-        $('verify').hidden = false;
-        $('resend').addEventListener('click', async () => {
-          try {
-            await sendEmailVerification(user);
-            $('verify').textContent = 'Sent. Check your inbox.';
-          } catch (err) {
-            $('verify').textContent = 'Could not send: ' + err.message;
-          }
-        });
+        showNotice(errBox, describeError(err), 'error');
       }
 
-      if (record.status && record.status !== 'active') {
-        errBox.textContent = 'This account is currently ' + record.status +
-          '. Please contact us if you think that is a mistake.';
-        errBox.hidden = false;
-      }
-    });
+      if (snap && !snap.exists()) {
+        go('register.html');
+      } else if (snap) {
+        const record = snap.data();
 
-    $('account-form').addEventListener('submit', async (e) => {
+        $('account-avatar').replaceChildren(avatarFor(user, 56));
+        $('account-email').textContent = record.email || user.email || '';
+        const first = (record.name || '').split(' ')[0];
+        $('greeting').textContent = first ? 'Hello, ' + first + '.' : 'Your details';
+        $('acc-email').value   = record.email || user.email || '';
+        $('acc-name').value    = record.name || '';
+        $('acc-phone').value   = record.phone || '';
+        $('acc-company').value = record.company || '';
+        $('acc-city').value    = record.city || '';
+        $('acc-notes').value   = record.notes || '';
+
+        if (!user.emailVerified && record.provider === 'password') {
+          const box = $('verify');
+          box.innerHTML = 'Your email address is not confirmed yet. ' +
+            '<button class="linkish" type="button" id="resend">Send the link again</button>';
+          box.hidden = false;
+          $('resend').addEventListener('click', async () => {
+            try {
+              await sendEmailVerification(user);
+              box.textContent = 'Sent. Check your inbox.';
+            } catch (err) { box.textContent = describeError(err); }
+          });
+        }
+
+        if (record.status && record.status !== 'active') {
+          showNotice(errBox,
+            'This account is currently ' + record.status +
+            '. Please contact us if you think that is a mistake.', 'warn');
+        }
+      }
+    }
+
+    // Signed out in another tab? Do not leave a stale page showing their data.
+    onSignedOut(auth, () => go('login.html'));
+
+    document.getElementById('account-form').addEventListener('submit', async (e) => {
       e.preventDefault();
-      errBox.hidden = true; okBox.hidden = true;
+      hideNotice(errBox); hideNotice(okBox);
+
+      if (!uid) {
+        return showNotice(errBox, 'You are not signed in any more. Please sign in again.', 'error');
+      }
 
       const name = $('acc-name').value.trim();
       const phone = $('acc-phone').value.trim();
-      if (name.length < 2) { errBox.textContent = 'Please enter your name.'; errBox.hidden = false; return; }
+      if (name.length < 2) return showNotice(errBox, 'Please enter your name.', 'error');
       if (!/^[+0-9][0-9\s\-()]{5,19}$/.test(phone)) {
-        errBox.textContent = 'Enter a phone number we can reach you on.'; errBox.hidden = false; return;
+        return showNotice(errBox, 'Enter a phone number we can reach you on.', 'error');
       }
 
-      save.disabled = true; save.textContent = 'Saving…';
+      save.disabled = true; save.textContent = 'Saving...';
       try {
-        // status, email and createdAt are deliberately not sent — the rules
+        // status, email and createdAt are deliberately never sent - the rules
         // reject any update that changes them.
-        await updateDoc(doc(db, 'users', uid), {
+        await withTimeout(updateDoc(doc(db, 'users', uid), {
           name: name,
           phone: phone,
           company: $('acc-company').value.trim(),
           city: $('acc-city').value.trim(),
           notes: $('acc-notes').value.trim(),
           updatedAt: serverTimestamp()
-        });
-        okBox.textContent = 'Saved.';
-        okBox.hidden = false;
+        }), 15000, 'Saving');
+        showNotice(okBox, 'Saved.', 'ok');
       } catch (err) {
-        errBox.textContent = err.code === 'permission-denied'
+        showNotice(errBox, err.code === 'permission-denied'
           ? 'That change was refused. If your account is suspended you cannot edit it.'
-          : 'Could not save: ' + err.message;
-        errBox.hidden = false;
+          : describeError(err), 'error');
       } finally {
         save.disabled = false; save.textContent = 'Save changes';
       }

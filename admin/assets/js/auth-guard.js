@@ -21,8 +21,20 @@ export let currentAdmin = null;
  */
 export function requireAdmin() {
   return new Promise((resolve) => {
+    let settled = false;
+
     onAuthStateChanged(auth, async (user) => {
+      // Fires again on every token refresh — roughly hourly, and on tab focus.
+      // Re-running the whole check each time costs a Firestore read and can
+      // repaint the page under the person using it.
+      if (settled) {
+        // ...except a genuine sign-out, including from another tab.
+        if (!user) window.location.replace('index.html');
+        return;
+      }
+
       if (!user) {
+        settled = true;
         window.location.replace('index.html');
         return;
       }
@@ -31,25 +43,28 @@ export function requireAdmin() {
       try {
         snap = await getDoc(doc(db, 'admins', user.uid));
       } catch (err) {
+        settled = true;
         // Rules rejected the read, or Firestore is not reachable.
         showFatal(
           'Could not verify your account',
           err.code === 'permission-denied'
             ? 'This account is signed in but is not on the admin list.'
-            : err.message
+            : esc(err.message)
         );
         return;
       }
 
       if (!snap.exists()) {
+        settled = true;
         showFatal(
           'Not an admin account',
-          'You are signed in as ' + user.email + ', but there is no admin record ' +
-          'for this account. Ask an owner to add you, then sign in again.'
+          'You are signed in as ' + esc(user.email) + ', but there is no admin record ' +
+          'for this account. Its user ID is ' + esc(user.uid) + '.'
         );
         return;
       }
 
+      settled = true;
       currentAdmin = { uid: user.uid, email: user.email, ...snap.data() };
       document.body.removeAttribute('data-loading');
       paintIdentity();
@@ -72,6 +87,7 @@ function paintIdentity() {
 
 function showFatal(title, detail) {
   document.body.removeAttribute('data-loading');
+  // title and detail are composed here from escaped values only.
   document.body.innerHTML =
     '<div class="fatal">' +
       '<h1>' + title + '</h1>' +

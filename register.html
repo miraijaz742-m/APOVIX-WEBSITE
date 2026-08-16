@@ -178,37 +178,39 @@
     import { auth, db, avatarFor } from './assets/js/fb.js';
     import {
       createUserWithEmailAndPassword, signInWithPopup, signInWithRedirect,
-      getRedirectResult, GoogleAuthProvider, onAuthStateChanged, signOut,
+      getRedirectResult, GoogleAuthProvider, signOut,
       sendEmailVerification, updateProfile
     } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
-    import {
-      doc, getDoc, setDoc, serverTimestamp
-    } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
-
+    import { doc, getDoc, setDoc, serverTimestamp }
+      from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
+    import { describeError, firstAuthState, go, isNavigating, providerOf,
+             showNotice, hideNotice, withTimeout } from './assets/js/auth-flow.js';
 
     const $ = (id) => document.getElementById(id);
     const form = $('register-form');
-    const errBox = $('error');
-    const okBox = $('ok');
-    const submit = $('submit');
-    const stepMethod = $('step-method');
-    const signedAs = $('signed-as');
+    const errBox = $('error'), okBox = $('ok'), submit = $('submit');
+    const googleBtn = $('google'), stepMethod = $('step-method'), signedAs = $('signed-as');
 
-    // Set once a Google sign-in has happened but the profile is not saved yet.
-    let googleUser = null;
+    // Set once an account exists but its profile has not been saved. Covers
+    // Google sign-up, and also recovery: if the profile write failed last time,
+    // the account exists and only the details are missing.
+    let pendingUser = null;
 
-    function fail(message) {
-      errBox.textContent = message;
-      errBox.hidden = false;
-      okBox.hidden = true;
-      submit.disabled = false;
-      submit.textContent = 'Create account';
+    function busy(on, label) {
+      submit.disabled = on;
+      googleBtn.disabled = on;
+      submit.textContent = on ? (label || 'Working...') : 'Create account';
+    }
+
+    function fail(err) {
+      hideNotice(okBox);
+      showNotice(errBox, typeof err === 'string' ? err : describeError(err), 'error');
+      busy(false);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     function setFieldError(id, message) {
-      const el = $(id + '-error');
-      const input = $(id);
+      const el = $(id + '-error'), input = $(id);
       if (!el) return;
       el.textContent = message || '';
       el.hidden = !message;
@@ -218,36 +220,43 @@
       }
     }
 
-    /* Google path: hide the email/password fields and show who we have. */
-    function enterGoogleMode(user) {
-      googleUser = user;
+    function clearFieldErrors() {
+      ['reg-name','reg-phone','reg-email','reg-password'].forEach((id) => setFieldError(id, ''));
+    }
+
+    /* An account already exists - collect the remaining details only. */
+    function enterProfileMode(user) {
+      pendingUser = user;
       document.querySelectorAll('[data-pw-only]').forEach((el) => { el.hidden = true; });
       stepMethod.hidden = true;
       signedAs.hidden = false;
-      $('signed-as-email').textContent = user.email;
+      $('signed-as-email').textContent = user.email || '';
       $('signed-as-avatar').replaceChildren(avatarFor(user, 36));
       if (user.displayName && !$('reg-name').value) $('reg-name').value = user.displayName;
       $('reg-phone').focus();
     }
 
-    const AUTH_ERRORS = {
-      'auth/email-already-in-use':   'An account with that email already exists. Sign in instead.',
-      'auth/invalid-email':          'That is not a valid email address.',
-      'auth/weak-password':          'Please choose a password of at least 8 characters.',
-      'auth/too-many-requests':      'Too many attempts. Wait a few minutes and try again.',
-      'auth/network-request-failed': 'No connection. Check your internet and try again.',
-      'auth/popup-closed-by-user':   'The Google window closed before sign-in finished.',
-      'auth/unauthorized-domain':    'This domain is not authorised for sign-in yet.',
-      'auth/operation-not-allowed':
-        'Email and password sign-up is not switched on for this site yet. ' +
-        'Please use "Continue with Google" above.'
-    };
+    /* Finished profile -> account page. Otherwise stay and collect details. */
+    async function afterAuth(user) {
+      if (isNavigating()) return;
+      try {
+        const snap = await withTimeout(getDoc(doc(db, 'users', user.uid)), 15000, 'Checking your account');
+        if (snap.exists()) { go('account.html'); return; }
+        enterProfileMode(user);
+      } catch (err) {
+        // Cannot tell whether a profile exists. Let them fill the form in
+        // rather than blocking - the write is idempotent on their own uid.
+        enterProfileMode(user);
+        showNotice(errBox, describeError(err), 'warn');
+      }
+    }
 
     const provider = new GoogleAuthProvider();
     provider.setCustomParameters({ prompt: 'select_account' });
 
-    $('google').addEventListener('click', async () => {
-      errBox.hidden = true;
+    googleBtn.addEventListener('click', async () => {
+      hideNotice(errBox); hideNotice(okBox);
+      googleBtn.disabled = true;
       try {
         const cred = await signInWithPopup(auth, provider);
         await afterAuth(cred.user);
@@ -255,42 +264,36 @@
         if (err.code === 'auth/popup-blocked' ||
             err.code === 'auth/operation-not-supported-in-this-environment') {
           try { return await signInWithRedirect(auth, provider); }
-          catch (e2) { return fail(AUTH_ERRORS[e2.code] || e2.message); }
+          catch (e2) { return fail(e2); }
         }
-        fail(AUTH_ERRORS[err.code] || (err.code + ' — ' + err.message));
+        if (err.code === 'auth/popup-closed-by-user' ||
+            err.code === 'auth/cancelled-popup-request') { googleBtn.disabled = false; return; }
+        fail(err);
+      } finally {
+        googleBtn.disabled = false;
       }
     });
 
-    /* If they already have a profile, there is nothing to register. */
-    async function afterAuth(user) {
-      const snap = await getDoc(doc(db, 'users', user.uid));
-      if (snap.exists()) { window.location.replace('account.html'); return; }
-      enterGoogleMode(user);
-    }
-
     $('switch-account').addEventListener('click', async () => {
-      await signOut(auth);
-      window.location.reload();
+      try { await signOut(auth); } finally { window.location.reload(); }
     });
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
-      errBox.hidden = true; okBox.hidden = true;
+      hideNotice(errBox); hideNotice(okBox);
+      clearFieldErrors();
 
       const name  = $('reg-name').value.trim();
       const phone = $('reg-phone').value.trim();
-      const email = googleUser ? googleUser.email : $('reg-email').value.trim();
-      const pass  = googleUser ? null : $('reg-password').value;
+      const email = pendingUser ? (pendingUser.email || '') : $('reg-email').value.trim();
+      const pass  = pendingUser ? null : $('reg-password').value;
 
       let bad = false;
-      setFieldError('reg-name', ''); setFieldError('reg-phone', '');
-      setFieldError('reg-email', ''); setFieldError('reg-password', '');
-
       if (name.length < 2) { setFieldError('reg-name', 'Please enter your name.'); bad = true; }
       if (!/^[+0-9][0-9\s\-()]{5,19}$/.test(phone)) {
         setFieldError('reg-phone', 'Enter a phone number we can reach you on.'); bad = true;
       }
-      if (!googleUser) {
+      if (!pendingUser) {
         if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) {
           setFieldError('reg-email', 'Enter a valid email address.'); bad = true;
         }
@@ -298,62 +301,70 @@
           setFieldError('reg-password', 'At least 8 characters.'); bad = true;
         }
       }
-      if (bad) return;
-
-      submit.disabled = true;
-      submit.textContent = 'Creating account…';
-
-      let user = googleUser;
-      try {
-        if (!user) {
-          const cred = await createUserWithEmailAndPassword(auth, email, pass);
-          user = cred.user;
-          try { await updateProfile(user, { displayName: name }); } catch (_) {}
-          try { await sendEmailVerification(user); } catch (_) {}
-        }
-      } catch (err) {
-        return fail(AUTH_ERRORS[err.code] || (err.code + ' — ' + err.message));
+      if (bad) {
+        const firstBad = form.querySelector('[aria-invalid="true"]');
+        if (firstBad) firstBad.focus();
+        return;
       }
 
-      // The rules require createdAt to be the server clock and email to match
-      // the signed-in token, so neither can be forged from here.
+      busy(true, 'Creating account...');
+
+      let user = pendingUser;
+      if (!user) {
+        try {
+          const cred = await createUserWithEmailAndPassword(auth, email, pass);
+          user = cred.user;
+        } catch (err) { return fail(err); }
+
+        // Nice to have, never fatal - the account already exists by now.
+        try { await updateProfile(user, { displayName: name }); } catch (err) {
+          console.warn('displayName not set:', err);
+        }
+        try { await sendEmailVerification(user); } catch (err) {
+          console.warn('verification email not sent:', err);
+        }
+      }
+
+      // The rules force createdAt to the server clock and require the stored
+      // email to equal the signed-in token, so neither can be forged here.
+      busy(true, 'Saving your details...');
       try {
-        await setDoc(doc(db, 'users', user.uid), {
+        await withTimeout(setDoc(doc(db, 'users', user.uid), {
           name: name,
           email: user.email,
           phone: phone,
           company: $('reg-company').value.trim(),
           city: $('reg-city').value.trim(),
           notes: $('reg-notes').value.trim(),
-          provider: googleUser ? 'google' : 'password',
+          provider: providerOf(user),
           emailVerified: !!user.emailVerified,
           status: 'active',
           createdAt: serverTimestamp()
-        });
+        }), 20000, 'Saving your details');
       } catch (err) {
-        return fail(err.code === 'permission-denied'
-          ? 'Your account was created but the details could not be saved. Please contact us.'
-          : 'Could not save your details: ' + err.message);
+        // The login exists but the profile does not. Say so plainly, and leave
+        // them signed in so pressing the button again finishes the job.
+        pendingUser = user;
+        return fail(
+          'Your sign-in was created, but your details could not be saved (' +
+          describeError(err) + '). Press "Create account" again to retry.'
+        );
       }
 
-      okBox.textContent = 'Account created. Taking you to your account…';
-      okBox.hidden = false;
-      setTimeout(() => window.location.replace('account.html'), 900);
+      showNotice(okBox, 'Account created. Taking you to your account...', 'ok');
+      setTimeout(() => go('account.html'), 800);
     });
 
-    /* Returning from a redirect sign-in */
+    // Redirect sign-in returns here first, so the two paths cannot both act.
     try {
       const result = await getRedirectResult(auth);
       if (result && result.user) await afterAuth(result.user);
-    } catch (err) {
-      fail(AUTH_ERRORS[err.code] || err.message);
-    }
+    } catch (err) { fail(err); }
 
-    /* Already signed in? Either finish the profile or go to the account page. */
-    onAuthStateChanged(auth, async (user) => {
-      if (!user || googleUser) return;
-      try { await afterAuth(user); } catch (_) {}
-    });
+    if (!pendingUser && !isNavigating()) {
+      const user = await firstAuthState(auth);
+      if (user) await afterAuth(user);
+    }
   </script>
   <script type="module" src="assets/js/user-nav.js"></script>
 </body>

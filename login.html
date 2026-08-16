@@ -121,49 +121,46 @@
     import { auth, db } from './assets/js/fb.js';
     import {
       signInWithEmailAndPassword, signInWithPopup, signInWithRedirect,
-      getRedirectResult, GoogleAuthProvider, onAuthStateChanged, sendPasswordResetEmail
+      getRedirectResult, GoogleAuthProvider, sendPasswordResetEmail
     } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
-    import { doc, getDoc }
-      from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
-
+    import { doc, getDoc } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
+    import { describeError, firstAuthState, go, isNavigating, showNotice, hideNotice, withTimeout }
+      from './assets/js/auth-flow.js';
 
     const $ = (id) => document.getElementById(id);
-    const errBox = $('error');
-    const okBox = $('ok');
-    const submit = $('submit');
+    const errBox = $('error'), okBox = $('ok'), submit = $('submit'), googleBtn = $('google');
 
-    function fail(message) {
-      errBox.textContent = message;
-      errBox.hidden = false;
-      okBox.hidden = true;
-      submit.disabled = false;
-      submit.textContent = 'Sign in';
+    function busy(on) {
+      submit.disabled = on;
+      googleBtn.disabled = on;
+      submit.textContent = on ? 'Signing in...' : 'Sign in';
     }
 
-    const AUTH_ERRORS = {
-      'auth/invalid-credential':     'That email and password do not match an account.',
-      'auth/invalid-email':          'That is not a valid email address.',
-      'auth/user-disabled':          'This account has been disabled. Please contact us.',
-      'auth/too-many-requests':      'Too many attempts. Wait a few minutes and try again.',
-      'auth/network-request-failed': 'No connection. Check your internet and try again.',
-      'auth/popup-closed-by-user':   'The Google window closed before sign-in finished.',
-      'auth/unauthorized-domain':    'This domain is not authorised for sign-in yet.',
-      'auth/operation-not-allowed':
-        'Email and password sign-in is not switched on for this site yet. ' +
-        'Please use "Continue with Google" above.'
-    };
+    function fail(err) {
+      hideNotice(okBox);
+      showNotice(errBox, typeof err === 'string' ? err : describeError(err), 'error');
+      busy(false);
+    }
 
-    // Signed in but never completed the profile? Send them to finish it.
+    // Where a signed-in person belongs: their account, or the register page if
+    // they never finished a profile. A failed lookup must not strand them on a
+    // blank screen, so it is reported rather than swallowed.
     async function route(user) {
-      const snap = await getDoc(doc(db, 'users', user.uid));
-      window.location.replace(snap.exists() ? 'account.html' : 'register.html');
+      if (isNavigating()) return;
+      try {
+        const snap = await withTimeout(getDoc(doc(db, 'users', user.uid)), 15000, 'Loading your account');
+        go(snap.exists() ? 'account.html' : 'register.html');
+      } catch (err) {
+        fail(err);
+      }
     }
 
     const provider = new GoogleAuthProvider();
     provider.setCustomParameters({ prompt: 'select_account' });
 
-    $('google').addEventListener('click', async () => {
-      errBox.hidden = true;
+    googleBtn.addEventListener('click', async () => {
+      hideNotice(errBox); hideNotice(okBox);
+      busy(true);
       try {
         const cred = await signInWithPopup(auth, provider);
         await route(cred.user);
@@ -171,28 +168,28 @@
         if (err.code === 'auth/popup-blocked' ||
             err.code === 'auth/operation-not-supported-in-this-environment') {
           try { return await signInWithRedirect(auth, provider); }
-          catch (e2) { return fail(AUTH_ERRORS[e2.code] || e2.message); }
+          catch (e2) { return fail(e2); }
         }
-        fail(AUTH_ERRORS[err.code] || (err.code + ' — ' + err.message));
+        // Closing the popup is a choice, not an error worth shouting about.
+        if (err.code === 'auth/popup-closed-by-user' ||
+            err.code === 'auth/cancelled-popup-request') { busy(false); return; }
+        fail(err);
       }
     });
 
-    $('login-form').addEventListener('submit', async (e) => {
+    document.getElementById('login-form').addEventListener('submit', async (e) => {
       e.preventDefault();
-      errBox.hidden = true; okBox.hidden = true;
+      hideNotice(errBox); hideNotice(okBox);
 
       const email = $('email').value.trim();
       const password = $('password').value;
       if (!email || !password) return fail('Enter your email and password, or use Google above.');
 
-      submit.disabled = true;
-      submit.textContent = 'Signing in…';
+      busy(true);
       try {
         const cred = await signInWithEmailAndPassword(auth, email, password);
         await route(cred.user);
-      } catch (err) {
-        fail(AUTH_ERRORS[err.code] || (err.code + ' — ' + err.message));
-      }
+      } catch (err) { fail(err); }
     });
 
     $('reset').addEventListener('click', async () => {
@@ -200,22 +197,23 @@
       if (!email) return fail('Enter your email address above first, then press this again.');
       try {
         await sendPasswordResetEmail(auth, email);
-        errBox.hidden = true;
-        okBox.textContent = 'If an account exists for ' + email + ', a reset link is on its way.';
-        okBox.hidden = false;
-      } catch (err) {
-        fail(AUTH_ERRORS[err.code] || err.message);
-      }
+        hideNotice(errBox);
+        // Deliberately not confirming whether the account exists.
+        showNotice(okBox, 'If an account exists for ' + email + ', a reset link is on its way.', 'ok');
+      } catch (err) { fail(err); }
     });
 
+    // Redirect sign-in returns here. Resolve it before looking at auth state,
+    // so the two paths cannot both fire a navigation.
     try {
       const result = await getRedirectResult(auth);
       if (result && result.user) await route(result.user);
-    } catch (err) {
-      fail(AUTH_ERRORS[err.code] || err.message);
-    }
+    } catch (err) { fail(err); }
 
-    onAuthStateChanged(auth, async (user) => { if (user) await route(user); });
+    if (!isNavigating()) {
+      const user = await firstAuthState(auth);
+      if (user) await route(user);
+    }
   </script>
   <script type="module" src="assets/js/user-nav.js"></script>
 </body>

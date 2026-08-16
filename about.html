@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>About — Apovix Technologies</title>
+  <meta name="description" content="Apovix Technologies is a two-person software studio in Kashmir building custom software, websites and AI tools for businesses." />
+  <meta name="theme-color" content="#FFFFFF" />
+
+  <link rel="icon" href="assets/img/favicon.png" type="image/png" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="assets/css/styles.css" />
+
+  <script>document.documentElement.classList.add('js');</script>
+</head>
+<body>
+
+  <a class="skip-link" href="#main">Skip to content</a>
+
+
+  <!-- HEADER — identical to the homepage; nav links point back to its sections -->
+  <header class="site-header" id="top" data-header>
+    <div class="container site-header__inner">
+
+      <a class="logo" href="index.html" aria-label="Apovix Technologies — home">
+        <img class="logo__mark" src="assets/img/logo-mark.png" alt="" width="512" height="497" />
+        <span class="logo__word">APOVIX</span>
+      </a>
+
+      <nav class="site-nav" aria-label="Primary">
+        <ul class="site-nav__list">
+          <li><a href="index.html#services">Services</a></li>
+          <li><a href="index.html#work">Work</a></li>
+          <li><a href="index.html#process">Process</a></li>
+          <li><a href="about.html" aria-current="page">About</a></li>
+        </ul>
+      </nav>
+
+      <a class="btn btn--primary site-header__cta" href="index.html#contact">Start a project</a>
+
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="mobile-menu" data-menu-open>
+        <span class="menu-toggle__bars" aria-hidden="true"><span></span><span></span></span>
+        <span class="sr-only">Open menu</span>
+      </button>
+    </div>
+  </header>
+
+  <div class="mobile-menu" id="mobile-menu" data-menu hidden>
+    <div class="mobile-menu__bar container">
+      <a class="logo" href="index.html" data-menu-link aria-label="Apovix Technologies — home">
+        <img class="logo__mark" src="assets/img/logo-mark.png" alt="" width="512" height="497" />
+        <span class="logo__word">APOVIX</span>
+      </a>
+      <button class="menu-toggle" type="button" data-menu-close>
+        <span class="menu-toggle__x" aria-hidden="true"></span>
+        <span class="sr-only">Close menu</span>
+      </button>
+    </div>
+    <nav class="mobile-menu__nav container" aria-label="Mobile">
+      <ul>
+        <li><a href="index.html#services" data-menu-link>Services</a></li>
+        <li><a href="index.html#work" data-menu-link>Work</a></li>
+        <li><a href="index.html#process" data-menu-link>Process</a></li>
+        <li><a href="about.html" data-menu-link>About</a></li>
+      </ul>
+      <a class="btn btn--primary btn--block" href="index.html#contact" data-menu-link>Start a project</a>
+    </nav>
+  </div>
+
+
+  <main id="main">
+
+    <!-- PAGE HEAD -->
+    <section class="page-head">
+      <div class="container">
+        <p class="crumb"><a href="index.html">Home</a> &nbsp;·&nbsp; About</p>
+        <h1 class="page-head__title">A two-person software studio in Kashmir.</h1>
+        <p class="page-head__lede">
+          We build custom software, websites and AI tools for businesses. Both of us work on
+          every project — there is no team behind us to hand your work to.
+        </p>
+      </div>
+    </section>
+
+
+    <!-- 1. INTRO + 2. STORY -->
+    <section class="section">
+      <div class="container">
+        <div class="prose reveal">
+
+          <h2 id="what-we-do">What we do</h2>
+          <p>
+            Apovix Technologies builds software to order. That covers three kinds of work:
+            custom web applications and internal tools, websites and storefronts, and
+            practical AI automation built into systems people already use.
+          </p>
+          <p>
+            Every project is scoped, quoted and built by the two of us. We take on a small
+            number of projects at a time, work directly with the people who will use what we
+            build, and stay on after launch. If a project is not a fit for us, we say so in
+            the first call.
+          </p>
+          <p>
+            You can see what we have shipped on the <a href="index.html#work">work section</a>
+            of our homepage.
+          </p>
+
+          <h2 id="story">How the studio started</h2>
+          <p>
+            Apovix Technologies was founded in
+            <span class="fill">[TO BE FILLED: founding year]</span> by Mir Aijaz Rasool and
+            Mir Javid Rasool.
+          </p>
+          <p class="fill fill--block">
+            [TO BE FILLED: the real reason you started the studio — what you were doing
+            before, what you kept seeing go wrong for local businesses, and why you decided
+            to build software rather than do something else. Two or three plain sentences,
+            in your own words. Do not replace this with a mission statement.]
+          </p>
+
+        </div>
+      </div>
+    </section>
+
+
+    <!-- 3. FOUNDERS -->
+    <section class="section section--surface">
+      <div class="container">
+        <header class="section__head reveal">
+          <p class="eyebrow">Founders</p>
+          <h2 class="section__title">The two people you will deal with.</h2>
+        </header>
+
+        <div class="founders reveal">
+          <article class="founder">
+            <img class="founder__photo" src="assets/Founder_1.png" alt="Portrait of Mir Aijaz Rasool" width="64" height="64" loading="lazy" decoding="async" />
+            <div>
+              <h3 class="founder__name">Mir Aijaz Rasool</h3>
+              <p class="founder__role">Founder · Engineering</p>
+              <p class="founder__bio">Backend systems, integrations and the parts that have to keep running at 2am. Currently pursuing a B.Tech in AI &amp; DS at the University of Kashmir.</p>
+            </div>
+          </article>
+
+          <article class="founder">
+            <img class="founder__photo" src="assets/Founder_2.png" alt="Portrait of Mir Javid Rasool" width="64" height="64" loading="lazy" decoding="async" />
+            <div>
+              <h3 class="founder__name">Mir Javid Rasool</h3>
+              <p class="founder__role">Co-founder · Director</p>
+              <p class="founder__bio">Product design, client conversations, and making sure what ships is what was agreed.</p>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- 4. HOW WE WORK -->
+    <section class="section">
+      <div class="container">
+        <header class="section__head reveal">
+          <p class="eyebrow">How we work</p>
+          <h2 class="section__title">Four things we hold to.</h2>
+        </header>
+
+        <div class="cards">
+          <article class="card reveal">
+            <h3 class="card__title">Both founders on every project</h3>
+            <p class="card__text">
+              Nothing is passed down a chain. The people who scope and quote your project are
+              the people who build it.
+            </p>
+          </article>
+
+          <article class="card reveal">
+            <h3 class="card__title">A build you can open each week</h3>
+            <p class="card__text">
+              You get something you can click through while it is being built, not a
+              month-long silence followed by a reveal.
+            </p>
+          </article>
+
+          <article class="card reveal">
+            <h3 class="card__title">Estimates we will stand behind</h3>
+            <p class="card__text">
+              Scope is agreed in writing before work starts. If something falls outside it, we
+              tell you before we build it, not after.
+            </p>
+          </article>
+
+          <article class="card reveal">
+            <h3 class="card__title">Code someone else can pick up</h3>
+            <p class="card__text">
+              Your project should not depend on us being available forever. We hand over code
+              a competent developer can read.
+            </p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- 5. COMPANY DETAILS -->
+    <section class="section section--surface">
+      <div class="container">
+        <div class="prose reveal">
+          <p class="eyebrow">Company details</p>
+          <h2 id="company-details" style="margin-top:0">Who you are contracting with</h2>
+          <p>
+            These are the details that appear on our invoices and in our contracts. Please
+            check them against any agreement before you sign it.
+          </p>
+
+          <dl class="details">
+            <div class="details__row">
+              <dt class="details__key">Registered name</dt>
+              <dd class="details__val"><span class="fill">[TO BE FILLED: full registered legal name, e.g. Apovix Technologies Private Limited — or state that the studio currently trades as a sole proprietorship / partnership]</span></dd>
+            </div>
+            <div class="details__row">
+              <dt class="details__key">Trading name</dt>
+              <dd class="details__val">Apovix Technologies</dd>
+            </div>
+            <div class="details__row">
+              <dt class="details__key">Entity type</dt>
+              <dd class="details__val"><span class="fill">[TO BE FILLED: private limited company / LLP / partnership / sole proprietorship]</span></dd>
+            </div>
+            <div class="details__row">
+              <dt class="details__key">CIN</dt>
+              <dd class="details__val"><span class="fill">[TO BE FILLED: CIN — available only after incorporation. Remove this row if not incorporated]</span></dd>
+            </div>
+            <div class="details__row">
+              <dt class="details__key">Date of incorporation</dt>
+              <dd class="details__val"><span class="fill">[TO BE FILLED: date of incorporation]</span></dd>
+            </div>
+            <div class="details__row">
+              <dt class="details__key">GSTIN</dt>
+              <dd class="details__val"><span class="fill">[TO BE FILLED: GSTIN, or "not registered for GST"]</span></dd>
+            </div>
+            <div class="details__row">
+              <dt class="details__key">Registered address</dt>
+              <dd class="details__val">
+                <address>
+                  Beerwah, Budgam<br />
+                  Jammu &amp; Kashmir 193411, India
+                </address>
+                <p><span class="fill">[TO BE FILLED: confirm the complete registered address — building or house number, street, and confirm the PIN code 193411]</span></p>
+              </dd>
+            </div>
+            <div class="details__row">
+              <dt class="details__key">Founders</dt>
+              <dd class="details__val">Mir Aijaz Rasool · Mir Javid Rasool</dd>
+            </div>
+            <div class="details__row">
+              <dt class="details__key">Directors on record</dt>
+              <dd class="details__val"><span class="fill">[TO BE FILLED: names and designations exactly as filed, plus DINs. Only applies once incorporated]</span></dd>
+            </div>
+            <div class="details__row">
+              <dt class="details__key">Email</dt>
+              <dd class="details__val"><a href="mailto:aijazm742@gmail.com">aijazm742@gmail.com</a></dd>
+            </div>
+            <div class="details__row">
+              <dt class="details__key">Phone</dt>
+              <dd class="details__val">
+                <a href="tel:+919103400985">+91 91034 00985</a><br />
+                <a href="tel:+916005109434">+91 60051 09434</a>
+              </dd>
+            </div>
+          </dl>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- 6. CTA -->
+    <section class="section section--tight">
+      <div class="container">
+        <div class="prose reveal">
+          <h2 style="margin-top:0">Start a project</h2>
+          <p>
+            Tell us what you are trying to build and we will tell you honestly whether we are
+            the right people for it.
+          </p>
+          <p><a class="btn btn--primary" href="index.html#contact">Get in touch</a></p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+
+  <!-- FOOTER — identical to the homepage -->
+  <footer class="site-footer">
+    <div class="container">
+
+      <div class="site-footer__top">
+        <div class="site-footer__brand">
+          <a class="logo logo--footer" href="index.html" aria-label="Apovix Technologies — home">
+            <img class="logo__mark" src="assets/img/logo-mark.png" alt="" width="512" height="497" />
+            <span class="logo__word">APOVIX</span>
+          </a>
+          <p class="site-footer__text">
+            A software studio in Kashmir. Custom software, websites and
+            AI-powered tools for businesses.
+          </p>
+          <ul class="socials">
+            <li><a href="#" aria-label="Apovix on LinkedIn">
+              <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6.5 8.5v10M6.5 5.2v.01M11 18.5v-6a3 3 0 0 1 6 0v6" /></svg>
+            </a></li>
+            <li><a href="#" aria-label="Apovix on X">
+              <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m5 5 14 14M19 5 5 19" /></svg>
+            </a></li>
+            <li><a href="#" aria-label="Apovix on GitHub">
+              <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M9 19c-4 1.2-4-2.2-5.5-2.8M15 21v-3.3a2.9 2.9 0 0 0-.8-2.2c2.6-.3 5.3-1.3 5.3-5.8a4.5 4.5 0 0 0-1.2-3.1 4.2 4.2 0 0 0-.1-3.1s-1-.3-3.3 1.2a11.3 11.3 0 0 0-6 0C6.6 3.2 5.6 3.5 5.6 3.5a4.2 4.2 0 0 0-.1 3.1A4.5 4.5 0 0 0 4.3 9.7c0 4.5 2.7 5.5 5.3 5.8a2.9 2.9 0 0 0-.8 2.2V21" /></svg>
+            </a></li>
+            <li><a href="#" aria-label="Apovix on Instagram">
+              <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="4" y="4" width="16" height="16" rx="4" /><circle cx="12" cy="12" r="3.6" /><path d="M17 7h.01" /></svg>
+            </a></li>
+          </ul>
+        </div>
+
+        <nav class="site-footer__links" aria-label="Footer">
+          <div>
+            <h2 class="site-footer__heading">Services</h2>
+            <ul>
+              <li><a href="index.html#services">Software development</a></li>
+              <li><a href="index.html#services">Web development</a></li>
+              <li><a href="index.html#services">AI solutions</a></li>
+              <li><a href="index.html#services">Support retainers</a></li>
+            </ul>
+          </div>
+          <div>
+            <h2 class="site-footer__heading">Company</h2>
+            <ul>
+              <li><a href="about.html">About</a></li>
+              <li><a href="index.html#work">Work</a></li>
+              <li><a href="index.html#process">Process</a></li>
+              <li><a href="index.html#contact">Contact</a></li>
+            </ul>
+          </div>
+          <div>
+            <h2 class="site-footer__heading">Legal</h2>
+            <ul>
+              <li><a href="privacy-policy.html">Privacy policy</a></li>
+              <li><a href="terms.html">Terms &amp; conditions</a></li>
+              <li><a href="refund-policy.html">Refund policy</a></li>
+            </ul>
+          </div>
+        </nav>
+      </div>
+
+      <div class="site-footer__bottom">
+        <p>© <span data-year>2026</span> Apovix Technologies. All rights reserved.</p>
+        <p class="site-footer__reg">
+          <span>CIN: [CIN placeholder]</span>
+          <span>GSTIN: [GST placeholder]</span>
+        </p>
+        <p class="site-footer__legal">
+          <a href="privacy-policy.html">Privacy Policy</a>
+          <a href="terms.html">Terms</a>
+        </p>
+      </div>
+
+    </div>
+  </footer>
+
+  <script src="assets/js/main.js" defer></script>
+</body>
+</html>

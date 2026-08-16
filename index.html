@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Apovix Technologies — Custom software, websites and AI tools | Srinagar</title>
+  <meta name="description"
+    content="Apovix Technologies is a software studio in Srinagar, Kashmir. We build custom software, websites and AI-powered tools for businesses." />
+  <meta name="theme-color" content="#FFFFFF" />
+
+  <!-- Favicon: replace with the supplied app-icon SVG -->
+  <link rel="icon" href="assets/img/favicon.png" type="image/png" />
+
+  <!-- Fonts: Space Grotesk (headings) + Inter (body) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap"
+    rel="stylesheet" />
+
+  <link rel="stylesheet" href="assets/css/styles.css" />
+
+  <!-- Set .js before first paint so scroll-reveal never hides content when JS is off -->
+  <script>document.documentElement.classList.add('js');</script>
+</head>
+
+<body>
+
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <!-- ==========================================================================
+       SVG SPRITE — the Apovix "A" mark, drawn once and re-used.
+       Uses currentColor so it can be orange in the header, white in the footer,
+       and a low-opacity wash in the hero. Replace the paths with the supplied
+       SVG when the final files land.
+       ========================================================================== -->
+
+  <!-- ==========================================================================
+       1. HEADER — sticky, white, hairline border appears on scroll
+       ========================================================================== -->
+  <header class="site-header" id="top" data-header>
+    <div class="container site-header__inner">
+
+      <!-- LOGO SLOT — horizontal lockup, 36px tall. Swap this block for the SVG. -->
+      <a class="logo" href="#top" aria-label="Apovix Technologies — home">
+        <img class="logo__mark" src="assets/img/logo-mark.png" alt="" width="512" height="497" />
+        <span class="logo__word">APOVIX</span>
+      </a>
+
+      <nav class="site-nav" aria-label="Primary">
+        <ul class="site-nav__list">
+          <li><a href="#services">Services</a></li>
+          <li><a href="#work">Work</a></li>
+          <li><a href="#process">Process</a></li>
+          <li><a href="#about">About</a></li>
+        </ul>
+      </nav>
+
+      <a class="btn btn--primary site-header__cta" href="#contact">Start a project</a>
+
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="mobile-menu" data-menu-open>
+        <span class="menu-toggle__bars" aria-hidden="true"><span></span><span></span></span>
+        <span class="sr-only">Open menu</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Mobile full-screen overlay menu -->
+  <div class="mobile-menu" id="mobile-menu" data-menu hidden>
+    <div class="mobile-menu__bar container">
+      <a class="logo" href="#top" data-menu-link aria-label="Apovix Technologies — home">
+        <img class="logo__mark" src="assets/img/logo-mark.png" alt="" width="512" height="497" />
+        <span class="logo__word">APOVIX</span>
+      </a>
+      <button class="menu-toggle" type="button" data-menu-close>
+        <span class="menu-toggle__x" aria-hidden="true"></span>
+        <span class="sr-only">Close menu</span>
+      </button>
+    </div>
+    <nav class="mobile-menu__nav container" aria-label="Mobile">
+      <ul>
+        <li><a href="#services" data-menu-link>Services</a></li>
+        <li><a href="#work" data-menu-link>Work</a></li>
+        <li><a href="#process" data-menu-link>Process</a></li>
+        <li><a href="#about" data-menu-link>About</a></li>
+      </ul>
+      <a class="btn btn--primary btn--block" href="#contact" data-menu-link>Start a project</a>
+    </nav>
+  </div>
+
+
+  <main id="main">
+
+    <!-- ========================================================================
+         2. HERO
+         ======================================================================== -->
+    <section class="hero">
+      <!-- Structural background graphic: the mark, cropped, bleeding off the right edge -->
+      <img class="hero__mark" src="assets/img/logo-mark.png" alt="" aria-hidden="true" />
+
+      <!-- Matrix rain: sparse, weighted to the right edge, masked out before the
+           headline. Purely decorative — skipped under prefers-reduced-motion. -->
+      <canvas class="hero__rain" data-rain aria-hidden="true"></canvas>
+
+      <div class="container hero__inner">
+        <p class="eyebrow">Software studio · Srinagar, Kashmir</p>
+        <h1 class="hero__title">We build custom software,&nbsp;websites and AI tools for&nbsp;businesses.</h1>
+        <p class="hero__lede">
+          Apovix is a two-person studio. We take on a number of projects at a time,
+          work directly with the people who will use what we build, and stay on after launch.
+        </p>
+        <div class="hero__actions">
+          <a class="btn btn--primary" href="#contact">Start a project</a>
+          <a class="btn btn--ghost" href="#work">See our work</a>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ========================================================================
+         3. SERVICES — three bordered cards
+         ======================================================================== -->
+    <section class="section" id="services">
+      <div class="container">
+        <header class="section__head reveal">
+          <p class="eyebrow">Services</p>
+          <h2 class="section__title">Three things we do, properly.</h2>
+          <p class="section__lede">
+            Every project is scoped, quoted and built by the two of us. Nothing is passed
+            down a chain.
+          </p>
+        </header>
+
+        <div class="cards">
+
+          <!-- Card: Software Development -->
+          <article class="card reveal">
+            <svg class="card__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <path d="M8 17 3 12l5-5M16 7l5 5-5 5M13.5 4l-3 16" />
+            </svg>
+            <h3 class="card__title">Software Development</h3>
+            <p class="card__text">
+              Systems that replace spreadsheets, manual registers and the five tools that
+              do not talk to each other.
+            </p>
+            <ul class="card__list">
+              <li>Custom web applications</li>
+              <li>Internal tools and dashboards</li>
+              <li>REST and GraphQL APIs</li>
+              <li>System and payment integrations</li>
+            </ul>
+          </article>
+
+          <!-- Card: Web Development -->
+          <article class="card reveal">
+            <svg class="card__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <rect x="3" y="4" width="18" height="16" rx="1" />
+              <path d="M3 9h18M7 6.5h.01M9.5 6.5h.01" />
+            </svg>
+            <h3 class="card__title">Web Development</h3>
+            <p class="card__text">
+              Sites that load fast on a patchy connection and read well on the phone
+              your customer actually owns.
+            </p>
+            <ul class="card__list">
+              <li>Marketing and brand sites</li>
+              <li>E-commerce storefronts</li>
+              <li>Web apps and client portals</li>
+              <li>Performance, accessibility and SEO</li>
+            </ul>
+          </article>
+
+          <!-- Card: AI Solutions -->
+          <article class="card reveal">
+            <svg class="card__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <rect x="5" y="7" width="14" height="12" rx="1" />
+              <path d="M12 4v3M9 12v2M15 12v2M2 12h3M19 12h3" />
+            </svg>
+            <h3 class="card__title">AI Solutions</h3>
+            <p class="card__text">
+              Practical automation for the work that eats a whole afternoon — reading,
+              sorting, answering, summarising.
+            </p>
+            <ul class="card__list">
+              <li>Support and sales chatbots</li>
+              <li>Document and invoice automation</li>
+              <li>LLM integrations into existing apps</li>
+              <li>Custom internal AI tooling</li>
+            </ul>
+          </article>
+
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ========================================================================
+         4. WORK — 2 columns desktop, 1 mobile.
+         Placeholder cards: replace .work-card__shot with <img alt="..."> screenshots.
+         ======================================================================== -->
+    <section class="section section--surface" id="work">
+      <div class="container">
+        <header class="section__head reveal">
+          <p class="eyebrow">Selected work</p>
+          <h2 class="section__title">A few things we have shipped.</h2>
+          <p class="section__lede">Small teams, real deadlines, software that is still in use.</p>
+        </header>
+
+        <div class="work-grid">
+
+          <article class="work-card reveal">
+            <img class="work-card__shot" src="assets/project_images/p1.png"
+              alt="CareVix dashboard showing daily sales, stock health and quick billing" width="1920" height="1080"
+              loading="lazy" decoding="async" />
+            <h3 class="work-card__title">CareVix</h3>
+            <p class="work-card__text">Billing, stock and expiry tracking for pharmacies. Runs local-first on the shop's
+              own computer, with the day's numbers synced to the owner's phone.</p>
+            <ul class="tags">
+              <li>Electron</li>
+              <li>React</li>
+              <li>SQLite</li>
+            </ul>
+          </article>
+
+          <article class="work-card reveal">
+            <img class="work-card__shot" src="assets/project_images/p2.png"
+              alt="CrushVix business dashboard showing sales, plant status and active deployment" width="1908"
+              height="1030" loading="lazy" decoding="async" />
+            <h3 class="work-card__title">CrushVix</h3>
+            <p class="work-card__text">Operations for a stone crushing plant — orders, parties, wages and expenses in
+              one place, with live production and uptime figures.</p>
+            <ul class="tags">
+              <li>React</li>
+              <li>TypeScript</li>
+              <li>SQLite</li>
+            </ul>
+          </article>
+
+          <article class="work-card reveal">
+            <img class="work-card__shot" src="assets/project_images/p3_website.png"
+              alt="Ibni Sina Pharmacy website homepage with call and stock enquiry buttons" width="1900" height="1036"
+              loading="lazy" decoding="async" />
+            <h3 class="work-card__title">Ibni Sina Pharmacy</h3>
+            <p class="work-card__text">Website for a neighbourhood pharmacy — opening hours, directions and reviews,
+              with call and stock-enquiry buttons a customer can reach in one tap.</p>
+            <ul class="tags">
+              <li>React</li>
+              <li>Vite</li>
+              <li>Firebase Hosting</li>
+            </ul>
+          </article>
+
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ========================================================================
+         5. PROCESS — five numbered steps joined by a hairline rule
+         ======================================================================== -->
+    <section class="section" id="process">
+      <div class="container">
+        <header class="section__head reveal">
+          <p class="eyebrow">Process</p>
+          <h2 class="section__title">How a project runs.</h2>
+        </header>
+
+        <ol class="process reveal">
+          <li class="step">
+            <span class="step__num">01</span>
+            <div class="step__body">
+              <h3 class="step__name">Discovery</h3>
+              <p class="step__text">We sit with you, map the actual workflow and agree what is in scope.</p>
+            </div>
+          </li>
+          <li class="step">
+            <span class="step__num">02</span>
+            <div class="step__body">
+              <h3 class="step__name">Design</h3>
+              <p class="step__text">Screens and flows first, so you can react to something real before we build.</p>
+            </div>
+          </li>
+          <li class="step">
+            <span class="step__num">03</span>
+            <div class="step__body">
+              <h3 class="step__name">Build</h3>
+              <p class="step__text">Weekly builds you can open and use. No month-long silences.</p>
+            </div>
+          </li>
+          <li class="step">
+            <span class="step__num">04</span>
+            <div class="step__body">
+              <h3 class="step__name">Launch</h3>
+              <p class="step__text">Deployment, data migration, and training for the people who will use it.</p>
+            </div>
+          </li>
+          <li class="step">
+            <span class="step__num">05</span>
+            <div class="step__body">
+              <h3 class="step__name">Support</h3>
+              <p class="step__text">Fixes, monitoring and small improvements on a monthly retainer.</p>
+            </div>
+          </li>
+        </ol>
+      </div>
+    </section>
+
+
+    <!-- ========================================================================
+         6. TECH STACK — quiet row on the surface background
+         ======================================================================== -->
+    <section class="section section--surface section--tight" aria-label="Technologies we use">
+      <div class="container">
+        <p class="eyebrow reveal">What we build with</p>
+        <ul class="stack reveal">
+          <li>React</li>
+          <li>Next.js</li>
+          <li>Node.js</li>
+          <li>Python</li>
+          <li>Flutter</li>
+          <li>PostgreSQL</li>
+          <li>AWS</li>
+          <li>OpenAI</li>
+        </ul>
+      </div>
+    </section>
+
+
+    <!-- ========================================================================
+         7. ABOUT STRIP — studio paragraph + two founder cards
+         ======================================================================== -->
+    <section class="section" id="about">
+      <div class="container about">
+
+        <div class="about__intro reveal">
+          <p class="eyebrow">About</p>
+          <h2 class="section__title">Built in Kashmir, for businesses anywhere.</h2>
+          <p class="about__text">
+            Apovix Technologies started in Srinagar with two founders and one rule: build
+            software the way we would want it built for us. That means honest estimates,
+            code someone else can pick up, and no feature nobody asked for.
+          </p>
+          <p class="about__text">
+            We work with retailers, clinics, travel operators and early-stage teams — most
+            of them in India, some further out. If a project is not a fit for us, we will
+            tell you in the first call.
+          </p>
+        </div>
+
+        <!-- Founder cards — replace names, roles, bios and photos -->
+        <div class="founders reveal">
+          <article class="founder">
+            <img class="founder__photo" src="assets/Founder_1.png" alt="Portrait of Mir Aijaz Rasool" width="64"
+              height="64" loading="lazy" decoding="async" />
+            <div>
+              <h3 class="founder__name">Mir Aijaz Rasool</h3>
+              <p class="founder__role">Founder · Engineering</p>
+              <p class="founder__bio">Backend systems, integrations and the parts that have to keep running at 2am.
+                Currently pursuing a B.Tech in AI &amp; DS at the University of Kashmir.</p>
+            </div>
+          </article>
+
+          <article class="founder">
+            <img class="founder__photo" src="assets/Founder_2.png" alt="Portrait of Mir Javid Rasool" width="64"
+              height="64" loading="lazy" decoding="async" />
+            <div>
+              <h3 class="founder__name">Mir Javid Rasool</h3>
+              <p class="founder__role">Co-founder · Director</p>
+              <p class="founder__bio">Product design, client conversations, and making sure what ships is what was
+                agreed.</p>
+            </div>
+          </article>
+        </div>
+
+      </div>
+    </section>
+
+
+    <!-- ========================================================================
+         8. CONTACT — details left, validated form right (logs to console)
+         ======================================================================== -->
+    <section class="section section--surface" id="contact">
+      <div class="container contact">
+
+        <div class="contact__intro reveal">
+          <p class="eyebrow">Contact</p>
+          <h2 class="section__title">Tell us what you are trying to build.</h2>
+          <p class="section__lede">
+            Send a few lines about the problem. We reply within one working day, and the
+            first call is a conversation, not a pitch.
+          </p>
+
+          <ul class="contact__details">
+            <li>
+              <svg class="contact__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <rect x="3" y="5" width="18" height="14" rx="1" />
+                <path d="m3 7 9 6 9-6" />
+              </svg>
+              <div>
+                <span class="contact__label">Email</span>
+                <a href="mailto:aijazm742@gmail.com">aijazm742@gmail.com</a>
+              </div>
+            </li>
+            <li>
+              <svg class="contact__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <path
+                  d="M6 3h3l2 5-2.5 1.5a12 12 0 0 0 6 6L16 13l5 2v3a2 2 0 0 1-2.2 2A17 17 0 0 1 4 5.2 2 2 0 0 1 6 3Z" />
+              </svg>
+              <div>
+                <span class="contact__label">Phone</span>
+                <a href="tel:+919103400985">+91 91034 00985</a><br />
+                <a href="tel:+916005109434">+91 60051 09434</a>
+              </div>
+            </li>
+            <li>
+              <svg class="contact__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <path d="M12 21s7-5.7 7-11a7 7 0 1 0-14 0c0 5.3 7 11 7 11Z" />
+                <circle cx="12" cy="10" r="2.5" />
+              </svg>
+              <div>
+                <span class="contact__label">Registered address</span>
+                <address>
+                  Apovix Technologies<br />
+                  Beerwah, Budgam<br />
+                  Jammu &amp; Kashmir 193411, India
+                </address>
+              </div>
+            </li>
+          </ul>
+        </div>
+
+        <div class="contact__form-wrap reveal">
+          <form class="form" id="contact-form" novalidate>
+
+            <div class="field">
+              <label for="name">Name</label>
+              <input id="name" name="name" type="text" autocomplete="name" aria-describedby="name-error" />
+              <p class="field__error" id="name-error" hidden></p>
+            </div>
+
+            <div class="field">
+              <label for="email">Email</label>
+              <input id="email" name="email" type="email" autocomplete="email" aria-describedby="email-error" />
+              <p class="field__error" id="email-error" hidden></p>
+            </div>
+
+            <div class="field">
+              <label for="company">Company <span class="field__optional">(optional)</span></label>
+              <input id="company" name="company" type="text" autocomplete="organization" />
+            </div>
+
+            <div class="field">
+              <label for="project-type">Project type</label>
+              <select id="project-type" name="projectType" aria-describedby="project-type-error">
+                <option value="">Select one</option>
+                <option value="software">Custom software</option>
+                <option value="web">Website or web app</option>
+                <option value="ai">AI solution</option>
+                <option value="support">Support for an existing product</option>
+                <option value="other">Something else</option>
+              </select>
+              <p class="field__error" id="project-type-error" hidden></p>
+            </div>
+
+            <div class="field">
+              <label for="message">Message</label>
+              <textarea id="message" name="message" rows="5" aria-describedby="message-error"></textarea>
+              <p class="field__error" id="message-error" hidden></p>
+            </div>
+
+            <button class="btn btn--primary btn--block" type="submit">Send enquiry</button>
+
+            <p class="form__status" id="form-status" role="status" hidden></p>
+          </form>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+
+  <!-- ==========================================================================
+       9. FOOTER — dark
+       ========================================================================== -->
+  <footer class="site-footer">
+    <div class="container">
+
+      <div class="site-footer__top">
+        <div class="site-footer__brand">
+          <!-- LOGO SLOT — white horizontal lockup, 32px tall -->
+          <a class="logo logo--footer" href="#top" aria-label="Apovix Technologies — home">
+            <img class="logo__mark" src="assets/img/logo-mark.png" alt="" width="512" height="497" />
+            <span class="logo__word">APOVIX</span>
+          </a>
+          <p class="site-footer__text">
+            A software studio in Srinagar, Kashmir. Custom software, websites and
+            AI-powered tools for businesses.
+          </p>
+          <ul class="socials">
+            <li><a href="#" aria-label="Apovix on LinkedIn">
+                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                  <path d="M6.5 8.5v10M6.5 5.2v.01M11 18.5v-6a3 3 0 0 1 6 0v6" />
+                </svg>
+              </a></li>
+            <li><a href="#" aria-label="Apovix on X">
+                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                  <path d="m5 5 14 14M19 5 5 19" />
+                </svg>
+              </a></li>
+            <li><a href="#" aria-label="Apovix on GitHub">
+                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                  <path
+                    d="M9 19c-4 1.2-4-2.2-5.5-2.8M15 21v-3.3a2.9 2.9 0 0 0-.8-2.2c2.6-.3 5.3-1.3 5.3-5.8a4.5 4.5 0 0 0-1.2-3.1 4.2 4.2 0 0 0-.1-3.1s-1-.3-3.3 1.2a11.3 11.3 0 0 0-6 0C6.6 3.2 5.6 3.5 5.6 3.5a4.2 4.2 0 0 0-.1 3.1A4.5 4.5 0 0 0 4.3 9.7c0 4.5 2.7 5.5 5.3 5.8a2.9 2.9 0 0 0-.8 2.2V21" />
+                </svg>
+              </a></li>
+            <li><a href="#" aria-label="Apovix on Instagram">
+                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                  <rect x="4" y="4" width="16" height="16" rx="4" />
+                  <circle cx="12" cy="12" r="3.6" />
+                  <path d="M17 7h.01" />
+                </svg>
+              </a></li>
+          </ul>
+        </div>
+
+        <nav class="site-footer__links" aria-label="Footer">
+          <div>
+            <h2 class="site-footer__heading">Services</h2>
+            <ul>
+              <li><a href="#services">Software development</a></li>
+              <li><a href="#services">Web development</a></li>
+              <li><a href="#services">AI solutions</a></li>
+              <li><a href="#services">Support retainers</a></li>
+            </ul>
+          </div>
+          <div>
+            <h2 class="site-footer__heading">Company</h2>
+            <ul>
+              <li><a href="about.html">About</a></li>
+              <li><a href="#work">Work</a></li>
+              <li><a href="#process">Process</a></li>
+              <li><a href="#contact">Contact</a></li>
+            </ul>
+          </div>
+          <div>
+            <h2 class="site-footer__heading">Legal</h2>
+            <ul>
+              <li><a href="privacy-policy.html">Privacy policy</a></li>
+              <li><a href="terms.html">Terms &amp; conditions</a></li>
+              <li><a href="refund-policy.html">Refund policy</a></li>
+            </ul>
+          </div>
+        </nav>
+      </div>
+
+      <div class="site-footer__bottom">
+        <p>© <span data-year>2026</span> Apovix Technologies. All rights reserved.</p>
+        <p class="site-footer__reg">
+          <span>CIN: [CIN placeholder]</span>
+          <span>GSTIN: [GST placeholder]</span>
+        </p>
+        <p class="site-footer__legal">
+          <a href="privacy-policy.html">Privacy Policy</a>
+          <a href="terms.html">Terms</a>
+        </p>
+      </div>
+
+    </div>
+  </footer>
+
+  <script src="assets/js/main.js" defer></script>
+</body>
+
+</html>

@@ -1,0 +1,14 @@
+# Windows folder metadata
+desktop.ini
+Thumbs.db
+.DS_Store
+
+# Local archive of the original template — not part of the site
+APOVIX.zip
+
+# Stray extensionless duplicate of assets/img/hero.svg
+/hero
+
+# Editor
+.vscode/
+.idea/

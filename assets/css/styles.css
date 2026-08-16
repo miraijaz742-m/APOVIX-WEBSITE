@@ -794,6 +794,8 @@ img.founder__photo { object-fit: cover; }
   transition: opacity .6s ease, transform .6s ease;
 }
 .js .reveal.is-visible { opacity: 1; transform: none; }
+/* Already on screen at load — appear at once, with no transition to watch */
+.js .reveal.is-instant { transition: none; }
 
 /* Stagger cards within a group a little */
 .js .cards .reveal:nth-child(2),

@@ -16,12 +16,28 @@
      1. HEADER — hairline border once the page has scrolled
      ---------------------------------------------------------------------- */
   var header = document.querySelector('[data-header]');
+  var scrollQueued = false;
+  var wasScrolled = null;
+
+  function applyScrollState() {
+    scrollQueued = false;
+    if (!header) return;
+    var isScrolled = window.scrollY > 8;
+    // Only touch the DOM when the state actually flips. A scroll event fires
+    // dozens of times a second; writing a class on every one of them forces
+    // needless style recalculation.
+    if (isScrolled === wasScrolled) return;
+    wasScrolled = isScrolled;
+    header.classList.toggle('is-scrolled', isScrolled);
+  }
 
   function onScroll() {
-    if (!header) return;
-    header.classList.toggle('is-scrolled', window.scrollY > 8);
+    if (scrollQueued) return;
+    scrollQueued = true;
+    window.requestAnimationFrame(applyScrollState);
   }
-  onScroll();
+
+  applyScrollState();
   window.addEventListener('scroll', onScroll, { passive: true });
 
 
@@ -82,11 +98,33 @@
       entries.forEach(function (entry) {
         if (!entry.isIntersecting) return;
         entry.target.classList.add('is-visible');
-        observer.unobserve(entry.target);
+        observer.unobserve(entry.target);   // never animates a second time
       });
     }, { rootMargin: '0px 0px -10% 0px', threshold: 0.1 });
 
-    Array.prototype.forEach.call(revealables, function (el) { observer.observe(el); });
+    Array.prototype.forEach.call(revealables, function (el) {
+      // Anything already on screen when the page loads is shown immediately,
+      // with no fade. Animating it produces a flash of empty page on arrival,
+      // which reads as the page still loading.
+      var box = el.getBoundingClientRect();
+      if (box.top < window.innerHeight && box.bottom > 0) {
+        el.classList.add('is-visible', 'is-instant');
+        return;
+      }
+      observer.observe(el);
+    });
+
+    // Safety net. If the observer never fires for something — an odd browser,
+    // a display change, a bug — content would stay invisible while scrolling
+    // past it. After five seconds anything still hidden is simply shown.
+    window.setTimeout(function () {
+      Array.prototype.forEach.call(revealables, function (el) {
+        if (!el.classList.contains('is-visible')) {
+          el.classList.add('is-visible');
+          observer.unobserve(el);
+        }
+      });
+    }, 5000);
   }
 
 
@@ -390,8 +428,21 @@
       document.hidden ? stop() : start();
     });
 
+    // Rebuild only when the width really changed.
+    //
+    // On a phone, scrolling hides and shows the browser's URL bar, which fires
+    // resize with a new innerHeight on almost every scroll. Rebuilding there
+    // regenerated every column from Math.random() and cleared the canvas, so
+    // the hero appeared to restart each time you scrolled. The hero's height is
+    // driven by its content and vw-based padding, not by viewport height, so a
+    // height-only change needs no work at all.
+    var lastWidth = window.innerWidth;
     var resizeTimer;
+
     window.addEventListener('resize', function () {
+      if (window.innerWidth === lastWidth) return;
+      lastWidth = window.innerWidth;
+
       window.clearTimeout(resizeTimer);
       resizeTimer = window.setTimeout(function () {
         var wasRunning = running;

@@ -74,10 +74,19 @@ export function requireAdmin() {
 }
 
 function paintIdentity() {
-  const nameEl = document.querySelector('[data-admin-name]');
-  const roleEl = document.querySelector('[data-admin-role]');
-  if (nameEl) nameEl.textContent = currentAdmin.name || currentAdmin.email;
-  if (roleEl) roleEl.textContent = currentAdmin.role || 'admin';
+  const label = currentAdmin.name || currentAdmin.email || '';
+
+  // Name and role appear in both the sidebar and the topbar, so every
+  // matching element is filled, not just the first one found.
+  document.querySelectorAll('[data-admin-name]').forEach((el) => {
+    el.textContent = label;
+  });
+  document.querySelectorAll('[data-admin-role]').forEach((el) => {
+    el.textContent = currentAdmin.role || 'admin';
+  });
+  document.querySelectorAll('[data-admin-initials]').forEach((el) => {
+    el.textContent = initials(label);
+  });
 
   // Owner-only controls stay hidden for ordinary admins.
   if (currentAdmin.role !== 'owner') {
@@ -116,6 +125,15 @@ export function markActiveNav() {
   document.querySelectorAll('.admin-nav a').forEach((a) => {
     if (a.getAttribute('href') === here) a.setAttribute('aria-current', 'page');
   });
+}
+
+/** "Mir Aijaz Rasool" -> "MR"; falls back to the first letter of an email. */
+function initials(nameOrEmail) {
+  const s = String(nameOrEmail || '').trim();
+  if (!s) return '?';
+  if (s.includes('@')) return s[0].toUpperCase();
+  const parts = s.split(/\s+/).filter(Boolean);
+  return (parts[0][0] + (parts.length > 1 ? parts[parts.length - 1][0] : '')).toUpperCase();
 }
 
 /** Escape text before it goes anywhere near innerHTML. */

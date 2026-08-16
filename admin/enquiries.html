@@ -16,29 +16,80 @@
   <div class="admin-shell">
 
     <aside class="admin-side">
+
       <a class="admin-side__brand" href="dashboard.html">
         <img src="../assets/img/logo-mark.png" alt="" />
-        <span>APOVIX<span class="admin-side__tag">Admin</span></span>
+        <span class="admin-side__word">APOVIX</span>
+        <span class="admin-side__tag">Admin</span>
       </a>
+
       <nav class="admin-nav" aria-label="Admin sections">
-        <ul>
-          <li><a href="dashboard.html">Dashboard</a></li>
-          <li><a href="enquiries.html">Enquiries</a></li>
-          <li><a href="members.html">Registered users</a></li>
-          <li><a href="content.html">Site content</a></li>
-          <li><a href="users.html">Admin access</a></li>
-        </ul>
+        <div class="admin-nav__group">
+          <p class="admin-nav__label">Overview</p>
+          <ul>
+            <li><a href="dashboard.html">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+              Dashboard</a></li>
+          </ul>
+        </div>
+
+        <div class="admin-nav__group">
+          <p class="admin-nav__label">Manage</p>
+          <ul>
+            <li><a href="enquiries.html">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>
+              Enquiries</a></li>
+            <li><a href="members.html">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 20v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="3.2"/><path d="M22 20v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.5a4 4 0 0 1 0 7"/></svg>
+              Registered users</a></li>
+          </ul>
+        </div>
+
+        <div class="admin-nav__group">
+          <p class="admin-nav__label">Settings</p>
+          <ul>
+            <li><a href="content.html">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8Z"/><path d="M14 3v5h5M9 13h6M9 17h4"/></svg>
+              Site content</a></li>
+            <li><a href="users.html">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 4 6v6c0 4.5 3.2 8.3 8 9 4.8-.7 8-4.5 8-9V6Z"/><path d="m9 12 2 2 4-4"/></svg>
+              Admin access</a></li>
+          </ul>
+        </div>
       </nav>
+
       <div class="admin-side__foot">
-        <p class="admin-side__who" data-admin-name>—</p>
-        <span class="admin-side__role" data-admin-role>—</span>
+        <p class="admin-side__who" data-admin-name>&mdash;</p>
+        <span class="admin-side__role" data-admin-role>&mdash;</span>
         <div class="admin-side__links">
-          <a href="../index.html" target="_blank" rel="noopener">View live site ↗</a>
+          <a href="../index.html" target="_blank" rel="noopener">View live site &#8599;</a>
           <button type="button" data-signout>Sign out</button>
         </div>
       </div>
+
     </aside>
 
+    <div class="admin-body">
+
+      <header class="admin-topbar">
+        <nav class="admin-crumb" aria-label="Breadcrumb">
+          <span>Admin</span>
+          <span class="admin-crumb__sep" aria-hidden="true">/</span>
+          <strong aria-current="page">Enquiries</strong>
+        </nav>
+
+        <div class="admin-topbar__right">
+          <a class="admin-topbar__link" href="../index.html" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><path d="M15 3h6v6M10 14 21 3"/></svg>
+            Live site
+          </a>
+          <span class="admin-topbar__divider" aria-hidden="true"></span>
+          <span class="admin-topbar__who">
+            <span class="admin-topbar__avatar" data-admin-initials aria-hidden="true">&mdash;</span>
+            <span class="admin-topbar__name" data-admin-name>&mdash;</span>
+          </span>
+        </div>
+      </header>
     <main class="admin-main">
 
       <header class="admin-head">
@@ -80,6 +131,7 @@
       </section>
 
     </main>
+    </div>
   </div>
 
   <script type="module">

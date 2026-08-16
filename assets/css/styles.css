@@ -1117,16 +1117,36 @@ img.founder__photo { object-fit: cover; }
 
 /* Shown on the register page once Google has identified the visitor */
 .signed-as {
-  padding: 0.75rem 1rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
+  padding: 0.875rem 1rem;
   background: var(--surface);
   border: 1px solid var(--line);
   border-left: 3px solid var(--accent);
   border-radius: var(--radius);
   font-size: var(--text-sm);
-  margin-bottom: 1.25rem;
+  margin-bottom: 1.5rem;
 }
 .signed-as[hidden] { display: none; }
-.signed-as .linkish { font-size: var(--text-sm); margin-left: 0.5rem; }
+.signed-as__who { min-width: 0; overflow-wrap: anywhere; }
+.signed-as__who strong { color: var(--ink); }
+.signed-as .linkish { font-size: var(--text-sm); white-space: nowrap; }
+
+/* Two fields per row once there is room — keeps the form from reading as an
+   endless single column. */
+.field-row { display: grid; gap: 0; }
+.field-row > .field + .field { margin-top: 1.25rem; }
+
+@media (min-width: 560px) {
+  .field-row { grid-template-columns: 1fr 1fr; gap: 1.25rem; }
+  .field-row > .field + .field { margin-top: 0; }
+}
+
+/* .field spacing assumes adjacent siblings; a row breaks that chain */
+.field-row + .field, .field + .field-row, .field-row + .field-row { margin-top: 1.25rem; }
 
 /* ==========================================================================
    17. PHONE REFINEMENTS

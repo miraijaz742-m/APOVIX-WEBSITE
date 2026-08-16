@@ -88,21 +88,25 @@
               <input id="acc-email" type="email" disabled />
               <p class="field__hint">Your email is fixed to the account you signed in with.</p>
             </div>
-            <div class="field">
-              <label for="acc-name">Full name <span class="req">*</span></label>
-              <input id="acc-name" name="name" type="text" autocomplete="name" />
+            <div class="field-row">
+              <div class="field">
+                <label for="acc-name">Full name <span class="req">*</span></label>
+                <input id="acc-name" name="name" type="text" autocomplete="name" />
+              </div>
+              <div class="field">
+                <label for="acc-phone">Phone number <span class="req">*</span></label>
+                <input id="acc-phone" name="phone" type="tel" autocomplete="tel" />
+              </div>
             </div>
-            <div class="field">
-              <label for="acc-phone">Phone number <span class="req">*</span></label>
-              <input id="acc-phone" name="phone" type="tel" autocomplete="tel" />
-            </div>
-            <div class="field">
-              <label for="acc-company">Business or organisation</label>
-              <input id="acc-company" name="company" type="text" autocomplete="organization" />
-            </div>
-            <div class="field">
-              <label for="acc-city">City</label>
-              <input id="acc-city" name="city" type="text" autocomplete="address-level2" />
+            <div class="field-row">
+              <div class="field">
+                <label for="acc-company">Business</label>
+                <input id="acc-company" name="company" type="text" autocomplete="organization" />
+              </div>
+              <div class="field">
+                <label for="acc-city">City</label>
+                <input id="acc-city" name="city" type="text" autocomplete="address-level2" />
+              </div>
             </div>
             <div class="field">
               <label for="acc-notes">What do you need built?</label>

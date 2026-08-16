@@ -43,11 +43,12 @@
         ]
       },
       {
+        "comment": "The CSS and JS filenames are not fingerprinted, so a max-age of any length serves a stale build after every deploy — the browser will not even ask. max-age=0 makes it revalidate each load, which costs a 304 and nothing else.",
         "source": "**/*.@(css|js)",
         "headers": [
           {
             "key": "Cache-Control",
-            "value": "public, max-age=3600, must-revalidate"
+            "value": "public, max-age=0, must-revalidate"
           }
         ]
       },

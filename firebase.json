@@ -50,7 +50,21 @@
             "value": "public, max-age=3600, must-revalidate"
           }
         ]
+      },
+      {
+        "comment": "The admin panel must never be indexed or cached by a shared proxy. Access itself is enforced by Firebase Auth plus the /admins check in firestore.rules — these headers only keep it out of search results and shared caches.",
+        "source": "/admin/**",
+        "headers": [
+          { "key": "X-Robots-Tag", "value": "noindex, nofollow" },
+          { "key": "Cache-Control", "value": "private, no-store" },
+          { "key": "X-Frame-Options", "value": "DENY" },
+          { "key": "Referrer-Policy", "value": "no-referrer" }
+        ]
       }
     ]
+  },
+  "firestore": {
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
   }
 }

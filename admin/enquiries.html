@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Enquiries — Apovix Admin</title>
+  <link rel="icon" href="../assets/img/favicon.png" type="image/png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/css/admin.css" />
+</head>
+<body data-loading>
+
+  <div class="admin-shell">
+
+    <aside class="admin-side">
+      <a class="admin-side__brand" href="dashboard.html">
+        <img src="../assets/img/logo-mark.png" alt="" />
+        <span>APOVIX<span class="admin-side__tag">Admin</span></span>
+      </a>
+      <nav class="admin-nav" aria-label="Admin sections">
+        <ul>
+          <li><a href="dashboard.html">Dashboard</a></li>
+          <li><a href="enquiries.html">Enquiries</a></li>
+          <li><a href="content.html">Site content</a></li>
+          <li><a href="users.html">Users</a></li>
+        </ul>
+      </nav>
+      <div class="admin-side__foot">
+        <p class="admin-side__who" data-admin-name>—</p>
+        <span class="admin-side__role" data-admin-role>—</span>
+        <div class="admin-side__links">
+          <a href="../index.html" target="_blank" rel="noopener">View live site ↗</a>
+          <button type="button" data-signout>Sign out</button>
+        </div>
+      </div>
+    </aside>
+
+    <main class="admin-main">
+
+      <header class="admin-head">
+        <h1>Enquiries</h1>
+        <p>Everything submitted through the contact form on the website.</p>
+      </header>
+
+      <div class="notice notice--error" id="error" hidden></div>
+
+      <section class="panel">
+        <div class="panel__head">
+          <h2>Inbox</h2>
+          <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+            <label class="sr-only" for="filter">Filter by status</label>
+            <select id="filter" style="padding:.375rem .625rem;border:1px solid var(--line);border-radius:var(--radius)">
+              <option value="all">All statuses</option>
+              <option value="new">New</option>
+              <option value="read">Read</option>
+              <option value="replied">Replied</option>
+              <option value="archived">Archived</option>
+            </select>
+            <button class="btn btn--ghost btn--sm" type="button" id="refresh">Refresh</button>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Received</th><th>From</th><th>Project</th>
+                <th>Status</th><th><span class="sr-only">Actions</span></th>
+              </tr>
+            </thead>
+            <tbody id="rows">
+              <tr><td colspan="5" class="empty">Loading…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <script type="module">
+    import { db } from './assets/js/firebase-init.js';
+    import { requireAdmin, wireSignOut, markActiveNav, esc, formatDate }
+      from './assets/js/auth-guard.js';
+    import { collection, getDocs, doc, updateDoc, deleteDoc, serverTimestamp }
+      from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
+
+    await requireAdmin();
+    wireSignOut();
+    markActiveNav();
+
+    const rows    = document.getElementById('rows');
+    const errBox  = document.getElementById('error');
+    const filter  = document.getElementById('filter');
+    let enquiries = [];
+
+    function showError(message) {
+      errBox.textContent = message;
+      errBox.hidden = false;
+    }
+
+    async function load() {
+      errBox.hidden = true;
+      rows.innerHTML = '<tr><td colspan="5" class="empty">Loading…</td></tr>';
+      try {
+        const snap = await getDocs(collection(db, 'enquiries'));
+        enquiries = snap.docs
+          .map((d) => ({ id: d.id, ...d.data() }))
+          .sort((a, b) => {
+            const at = a.createdAt ? a.createdAt.toMillis() : 0;
+            const bt = b.createdAt ? b.createdAt.toMillis() : 0;
+            return bt - at;
+          });
+        render();
+      } catch (err) {
+        rows.innerHTML = '<tr><td colspan="5" class="empty">Could not load.</td></tr>';
+        showError(err.code === 'permission-denied'
+          ? 'Firestore refused the read — check that firestore.rules is deployed and your account is in /admins.'
+          : 'Could not reach Firestore: ' + err.message);
+      }
+    }
+
+    function render() {
+      const want = filter.value;
+      const list = want === 'all'
+        ? enquiries
+        : enquiries.filter((e) => (e.status || 'new') === want);
+
+      if (!list.length) {
+        rows.innerHTML = '<tr><td colspan="5" class="empty">' +
+          (enquiries.length ? 'Nothing with that status.'
+                            : 'No enquiries yet. They arrive here the moment someone uses the contact form.') +
+          '</td></tr>';
+        return;
+      }
+
+      rows.innerHTML = list.map((e) => {
+        const status = esc(e.status || 'new');
+        return '' +
+        '<tr>' +
+          '<td class="num">' + formatDate(e.createdAt) + '</td>' +
+          '<td>' +
+            '<strong>' + esc(e.name) + '</strong><br>' +
+            '<a href="mailto:' + esc(e.email) + '">' + esc(e.email) + '</a>' +
+            (e.company ? '<br><span class="num">' + esc(e.company) + '</span>' : '') +
+          '</td>' +
+          '<td>' + esc(e.projectType || '—') + '</td>' +
+          '<td><span class="pill pill--' + status + '">' + status + '</span></td>' +
+          '<td><button class="btn btn--ghost btn--sm" type="button" data-open="' + esc(e.id) + '">Open</button></td>' +
+        '</tr>' +
+        '<tr hidden data-detail="' + esc(e.id) + '">' +
+          '<td colspan="5">' +
+            '<div class="detail">' +
+              '<div class="detail__row"><span class="detail__key">Message</span>' +
+                '<p class="detail__val detail__msg">' + esc(e.message) + '</p></div>' +
+              (e.source ? '<div class="detail__row"><span class="detail__key">Submitted from</span>' +
+                '<p class="detail__val">' + esc(e.source) + '</p></div>' : '') +
+              '<div class="form-actions">' +
+                '<a class="btn btn--primary btn--sm" href="mailto:' + esc(e.email) +
+                  '?subject=' + encodeURIComponent('Re: your enquiry to Apovix Technologies') + '">Reply by email</a>' +
+                '<button class="btn btn--ghost btn--sm" type="button" data-status="read"     data-id="' + esc(e.id) + '">Mark read</button>' +
+                '<button class="btn btn--ghost btn--sm" type="button" data-status="replied"  data-id="' + esc(e.id) + '">Mark replied</button>' +
+                '<button class="btn btn--ghost btn--sm" type="button" data-status="archived" data-id="' + esc(e.id) + '">Archive</button>' +
+                '<button class="btn btn--danger btn--sm" type="button" data-delete="' + esc(e.id) + '">Delete</button>' +
+              '</div>' +
+            '</div>' +
+          '</td>' +
+        '</tr>';
+      }).join('');
+    }
+
+    rows.addEventListener('click', async (e) => {
+      const openBtn = e.target.closest('[data-open]');
+      if (openBtn) {
+        const row = rows.querySelector('[data-detail="' + openBtn.dataset.open + '"]');
+        row.hidden = !row.hidden;
+        openBtn.textContent = row.hidden ? 'Open' : 'Close';
+        return;
+      }
+
+      const statusBtn = e.target.closest('[data-status]');
+      if (statusBtn) {
+        statusBtn.disabled = true;
+        try {
+          await updateDoc(doc(db, 'enquiries', statusBtn.dataset.id), {
+            status: statusBtn.dataset.status,
+            updatedAt: serverTimestamp()
+          });
+          await load();
+        } catch (err) {
+          statusBtn.disabled = false;
+          showError('Could not update: ' + err.message);
+        }
+        return;
+      }
+
+      const delBtn = e.target.closest('[data-delete]');
+      if (delBtn) {
+        if (!window.confirm('Delete this enquiry permanently? This cannot be undone.')) return;
+        delBtn.disabled = true;
+        try {
+          await deleteDoc(doc(db, 'enquiries', delBtn.dataset.delete));
+          await load();
+        } catch (err) {
+          delBtn.disabled = false;
+          showError('Could not delete: ' + err.message);
+        }
+      }
+    });
+
+    filter.addEventListener('change', render);
+    document.getElementById('refresh').addEventListener('click', load);
+
+    await load();
+  </script>
+</body>
+</html>

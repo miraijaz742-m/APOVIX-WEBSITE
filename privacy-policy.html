@@ -166,7 +166,13 @@
         <p>
           When you submit the enquiry form on our homepage, we collect the fields on that
           form: your name, your email address, your company name (optional), the project type
-          you select, and the message you write.
+          you select, and the message you write. We also record the time of submission and
+          which page you sent it from.
+        </p>
+        <p>
+          That enquiry is stored in Google Cloud Firestore, where it can be read only by the
+          two of us through a password-protected admin panel. It is not published anywhere,
+          and the form does not send it to any third party.
         </p>
         <p>
           If you contact us by email or phone instead, we hold whatever you choose to send us,
@@ -249,6 +255,15 @@
             <strong>Google Fonts</strong> (Google LLC) — delivers the two typefaces used on
             this site. Your browser requests them directly from Google, which means Google
             receives your IP address as part of that request.
+          </li>
+          <li>
+            <strong>Google Cloud Firestore</strong> (Google LLC) — the database that stores
+            enquiries submitted through the form on our website.
+          </li>
+          <li>
+            <strong>Firebase Authentication</strong> (Google LLC) — signs the two of us in to
+            the admin panel where those enquiries are read. It handles no visitor accounts;
+            this website has no public sign-up.
           </li>
           <li>
             <strong>Google Gmail</strong> (Google LLC) — the mailbox that receives enquiries

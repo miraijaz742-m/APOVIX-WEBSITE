@@ -1,0 +1,85 @@
+rules_version = '2';
+
+// Apovix Technologies — Firestore security rules
+//
+// The public website is static and unauthenticated. The only thing a visitor
+// may do is create an enquiry. Everything else requires an admin account,
+// which means an entry in /admins keyed by the Firebase Auth UID.
+//
+// Being signed in is NOT enough. If Auth is ever opened to self sign-up, a
+// stranger with an account still has no read access to anything here.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // --- helpers ---------------------------------------------------------
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isSignedIn()
+        && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
+
+    function isOwner() {
+      return isAdmin()
+        && get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.role == 'owner';
+    }
+
+    // An enquiry arriving from the public form. Validated here because the
+    // form is client-side and anyone can post to this collection directly.
+    function validEnquiry(d) {
+      return d.keys().hasOnly(
+               ['name','email','company','projectType','message','createdAt','status','source'])
+        && d.keys().hasAll(['name','email','message','createdAt','status'])
+        && d.name is string       && d.name.size()    >= 2   && d.name.size()    <= 100
+        && d.email is string      && d.email.size()   >= 5   && d.email.size()   <= 200
+        && d.email.matches('^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$')
+        && d.message is string    && d.message.size() >= 10  && d.message.size() <= 5000
+        && (!('company' in d.keys())     || (d.company is string     && d.company.size()     <= 150))
+        && (!('projectType' in d.keys()) || (d.projectType is string && d.projectType.size() <= 60))
+        && (!('source' in d.keys())      || (d.source is string      && d.source.size()      <= 100))
+        // Status must start as 'new'; only an admin can move it on.
+        && d.status == 'new'
+        // Timestamp must be the server's, so it cannot be back or post dated.
+        && d.createdAt == request.time;
+    }
+
+    // --- enquiries -------------------------------------------------------
+    // Anyone may submit one. Nobody but an admin may read them — an enquiry
+    // contains a member of the public's name, email and business details.
+    match /enquiries/{enquiryId} {
+      allow create: if validEnquiry(request.resource.data);
+      allow read:   if isAdmin();
+      // An admin may change the status and add notes, never rewrite history.
+      allow update: if isAdmin()
+                    && request.resource.data.diff(resource.data)
+                         .affectedKeys().hasOnly(['status','notes','updatedAt']);
+      allow delete: if isAdmin();
+    }
+
+    // --- editable site content -------------------------------------------
+    // World-readable: the public pages fetch these to render. Admin-writable.
+    match /siteContent/{docId} {
+      allow read:  if true;
+      allow write: if isAdmin();
+    }
+
+    // --- admin roster -----------------------------------------------------
+    // Membership of this collection IS the permission. Only an owner may
+    // grant or revoke it, and an owner cannot remove their own record — that
+    // would lock the panel permanently.
+    match /admins/{uid} {
+      allow read:   if isAdmin();
+      allow create: if isOwner();
+      allow update: if isOwner();
+      allow delete: if isOwner() && uid != request.auth.uid;
+    }
+
+    // --- everything else --------------------------------------------------
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Users — Apovix Admin</title>
+  <link rel="icon" href="../assets/img/favicon.png" type="image/png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/css/admin.css" />
+</head>
+<body data-loading>
+
+  <div class="admin-shell">
+
+    <aside class="admin-side">
+      <a class="admin-side__brand" href="dashboard.html">
+        <img src="../assets/img/logo-mark.png" alt="" />
+        <span>APOVIX<span class="admin-side__tag">Admin</span></span>
+      </a>
+      <nav class="admin-nav" aria-label="Admin sections">
+        <ul>
+          <li><a href="dashboard.html">Dashboard</a></li>
+          <li><a href="enquiries.html">Enquiries</a></li>
+          <li><a href="content.html">Site content</a></li>
+          <li><a href="users.html">Users</a></li>
+        </ul>
+      </nav>
+      <div class="admin-side__foot">
+        <p class="admin-side__who" data-admin-name>—</p>
+        <span class="admin-side__role" data-admin-role>—</span>
+        <div class="admin-side__links">
+          <a href="../index.html" target="_blank" rel="noopener">View live site ↗</a>
+          <button type="button" data-signout>Sign out</button>
+        </div>
+      </div>
+    </aside>
+
+    <main class="admin-main">
+
+      <header class="admin-head">
+        <h1>Users</h1>
+        <p>Who can sign in to this panel.</p>
+      </header>
+
+      <div class="setup-note">
+        <h2>Two steps to add someone</h2>
+        <p>
+          The website has no public accounts — the only users are the people who
+          administer it. Creating a login and granting it access are separate:
+        </p>
+        <ol>
+          <li>
+            Create the account in
+            <a href="https://console.firebase.google.com/project/apovix-website/authentication/users" target="_blank" rel="noopener">Firebase console → Authentication → Add user</a>,
+            with an email and password. Copy the <strong>User UID</strong> it generates.
+          </li>
+          <li>Paste that UID into the form below to grant admin access.</li>
+        </ol>
+        <p style="margin-top:.75rem">
+          Step one needs the console because creating an Auth account requires
+          server credentials, which a browser page cannot hold safely. Anything
+          that could do it from here could also be abused by anyone who opened
+          this page.
+        </p>
+      </div>
+
+      <div class="notice notice--error" id="error" hidden></div>
+      <div class="notice notice--ok" id="ok" hidden></div>
+
+      <section class="panel">
+        <div class="panel__head">
+          <h2>Admin accounts</h2>
+          <button class="btn btn--ghost btn--sm" type="button" id="refresh">Refresh</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Name</th><th>Email</th><th>Role</th><th>Added</th><th><span class="sr-only">Actions</span></th></tr>
+            </thead>
+            <tbody id="rows">
+              <tr><td colspan="5" class="empty">Loading…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="panel" data-owner-only>
+        <div class="panel__head">
+          <h2>Grant admin access</h2>
+          <p class="panel__note">Owners only.</p>
+        </div>
+
+        <form id="add-form">
+          <div class="field">
+            <label for="uid">Firebase User UID</label>
+            <input id="uid" name="uid" type="text" required
+                   placeholder="e.g. 8Kd2mNp4QrStUvWxYz1AbCdEfGh2" />
+            <p class="field__hint">Copied from Authentication → Users in the Firebase console.</p>
+          </div>
+          <div class="field">
+            <label for="new-email">Email</label>
+            <input id="new-email" name="email" type="email" required />
+            <p class="field__hint">Must match the account's email. Shown in this table only.</p>
+          </div>
+          <div class="field">
+            <label for="name">Name</label>
+            <input id="name" name="name" type="text" required />
+          </div>
+          <div class="field">
+            <label for="role">Role</label>
+            <select id="role" name="role">
+              <option value="admin">Admin — read and manage enquiries and content</option>
+              <option value="owner">Owner — everything, including managing users</option>
+            </select>
+          </div>
+          <div class="form-actions">
+            <button class="btn btn--primary" type="submit" id="add">Grant access</button>
+          </div>
+        </form>
+      </section>
+
+    </main>
+  </div>
+
+  <script type="module">
+    import { db } from './assets/js/firebase-init.js';
+    import { requireAdmin, wireSignOut, markActiveNav, esc, formatDate, currentAdmin }
+      from './assets/js/auth-guard.js';
+    import { collection, getDocs, doc, setDoc, deleteDoc, getDoc, serverTimestamp }
+      from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
+
+    await requireAdmin();
+    wireSignOut();
+    markActiveNav();
+
+    const rows   = document.getElementById('rows');
+    const errBox = document.getElementById('error');
+    const okBox  = document.getElementById('ok');
+
+    function fail(message) { errBox.textContent = message; errBox.hidden = false; okBox.hidden = true; }
+    function done(message) { okBox.textContent = message; okBox.hidden = false; errBox.hidden = true; }
+
+    async function load() {
+      rows.innerHTML = '<tr><td colspan="5" class="empty">Loading…</td></tr>';
+      try {
+        const snap = await getDocs(collection(db, 'admins'));
+        const list = snap.docs.map((d) => ({ uid: d.id, ...d.data() }));
+
+        if (!list.length) {
+          rows.innerHTML = '<tr><td colspan="5" class="empty">No admin records. ' +
+            'If you can read this page, your own record exists — try refreshing.</td></tr>';
+          return;
+        }
+
+        const isOwner = currentAdmin.role === 'owner';
+
+        rows.innerHTML = list.map((u) => {
+          const self = u.uid === currentAdmin.uid;
+          const role = esc(u.role || 'admin');
+          return '<tr>' +
+            '<td><strong>' + esc(u.name || '—') + '</strong>' + (self ? ' <span class="num">(you)</span>' : '') +
+              '<br><span class="num">' + esc(u.uid) + '</span></td>' +
+            '<td>' + esc(u.email || '—') + '</td>' +
+            '<td><span class="pill pill--' + role + '">' + role + '</span></td>' +
+            '<td class="num">' + formatDate(u.createdAt) + '</td>' +
+            '<td>' + (isOwner && !self
+                ? '<button class="btn btn--danger btn--sm" type="button" data-revoke="' + esc(u.uid) + '">Revoke</button>'
+                : '') + '</td>' +
+          '</tr>';
+        }).join('');
+      } catch (err) {
+        rows.innerHTML = '<tr><td colspan="5" class="empty">Could not load.</td></tr>';
+        fail(err.code === 'permission-denied'
+          ? 'Firestore refused the read — check that firestore.rules is deployed.'
+          : 'Could not reach Firestore: ' + err.message);
+      }
+    }
+
+    rows.addEventListener('click', async (e) => {
+      const btn = e.target.closest('[data-revoke]');
+      if (!btn) return;
+      if (!window.confirm(
+        'Revoke admin access for this account?\n\n' +
+        'Their login still exists in Firebase Authentication — this only removes ' +
+        'their permission to use this panel.')) return;
+
+      btn.disabled = true;
+      try {
+        await deleteDoc(doc(db, 'admins', btn.dataset.revoke));
+        done('Access revoked.');
+        await load();
+      } catch (err) {
+        btn.disabled = false;
+        fail('Could not revoke: ' + err.message);
+      }
+    });
+
+    const addForm = document.getElementById('add-form');
+    if (addForm) {
+      addForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const add = document.getElementById('add');
+        const uid = document.getElementById('uid').value.trim();
+        const email = document.getElementById('new-email').value.trim();
+        const name = document.getElementById('name').value.trim();
+        const role = document.getElementById('role').value;
+
+        if (uid.length < 20) return fail('That does not look like a Firebase UID — they are around 28 characters.');
+        if (!email || !name) return fail('Email and name are both required.');
+
+        add.disabled = true; add.textContent = 'Granting…';
+        try {
+          const existing = await getDoc(doc(db, 'admins', uid));
+          if (existing.exists()) {
+            add.disabled = false; add.textContent = 'Grant access';
+            return fail('That UID already has admin access.');
+          }
+          await setDoc(doc(db, 'admins', uid), {
+            email: email, name: name, role: role,
+            createdAt: serverTimestamp(), createdBy: currentAdmin.email
+          });
+          addForm.reset();
+          done(name + ' can now sign in to the admin panel.');
+          await load();
+        } catch (err) {
+          fail(err.code === 'permission-denied'
+            ? 'Only an owner can grant admin access.'
+            : 'Could not grant access: ' + err.message);
+        } finally {
+          add.disabled = false; add.textContent = 'Grant access';
+        }
+      });
+    }
+
+    document.getElementById('refresh').addEventListener('click', load);
+    await load();
+  </script>
+</body>
+</html>

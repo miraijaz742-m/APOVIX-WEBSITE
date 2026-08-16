@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Dashboard — Apovix Admin</title>
+  <link rel="icon" href="../assets/img/favicon.png" type="image/png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/css/admin.css" />
+</head>
+<body data-loading>
+
+  <div class="admin-shell">
+
+    <aside class="admin-side">
+      <a class="admin-side__brand" href="dashboard.html">
+        <img src="../assets/img/logo-mark.png" alt="" />
+        <span>APOVIX<span class="admin-side__tag">Admin</span></span>
+      </a>
+
+      <nav class="admin-nav" aria-label="Admin sections">
+        <ul>
+          <li><a href="dashboard.html">Dashboard</a></li>
+          <li><a href="enquiries.html">Enquiries</a></li>
+          <li><a href="content.html">Site content</a></li>
+          <li><a href="users.html">Users</a></li>
+        </ul>
+      </nav>
+
+      <div class="admin-side__foot">
+        <p class="admin-side__who" data-admin-name>—</p>
+        <span class="admin-side__role" data-admin-role>—</span>
+        <div class="admin-side__links">
+          <a href="../index.html" target="_blank" rel="noopener">View live site ↗</a>
+          <button type="button" data-signout>Sign out</button>
+        </div>
+      </div>
+    </aside>
+
+    <main class="admin-main">
+
+      <header class="admin-head">
+        <h1>Dashboard</h1>
+        <p>What has come in, and what is waiting on you.</p>
+      </header>
+
+      <div class="notice notice--warn" id="setup" hidden></div>
+
+      <div class="stats">
+        <div class="stat">
+          <p class="stat__label">New enquiries</p>
+          <p class="stat__value" data-stat="new">—</p>
+        </div>
+        <div class="stat">
+          <p class="stat__label">Total enquiries</p>
+          <p class="stat__value" data-stat="total">—</p>
+        </div>
+        <div class="stat">
+          <p class="stat__label">Last 30 days</p>
+          <p class="stat__value" data-stat="month">—</p>
+        </div>
+        <div class="stat">
+          <p class="stat__label">Admin users</p>
+          <p class="stat__value" data-stat="admins">—</p>
+        </div>
+      </div>
+
+      <section class="panel">
+        <div class="panel__head">
+          <h2>Latest enquiries</h2>
+          <a class="btn btn--ghost btn--sm" href="enquiries.html">See all</a>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Received</th><th>Name</th><th>Project</th><th>Status</th></tr>
+            </thead>
+            <tbody id="recent">
+              <tr><td colspan="4" class="empty">Loading…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <script type="module">
+    import { db } from './assets/js/firebase-init.js';
+    import { requireAdmin, wireSignOut, markActiveNav, esc, formatDate }
+      from './assets/js/auth-guard.js';
+    import { collection, getDocs, query, orderBy, limit, where, Timestamp }
+      from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
+
+    await requireAdmin();
+    wireSignOut();
+    markActiveNav();
+
+    const setup = document.getElementById('setup');
+    const recent = document.getElementById('recent');
+
+    function setStat(key, value) {
+      document.querySelector('[data-stat="' + key + '"]').textContent = value;
+    }
+
+    try {
+      const snap = await getDocs(collection(db, 'enquiries'));
+      const all = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+
+      const monthAgo = Timestamp.fromMillis(Date.now() - 30 * 24 * 60 * 60 * 1000);
+
+      setStat('total', all.length);
+      setStat('new',   all.filter((e) => e.status === 'new').length);
+      setStat('month', all.filter((e) => e.createdAt && e.createdAt >= monthAgo).length);
+
+      const admins = await getDocs(collection(db, 'admins'));
+      setStat('admins', admins.size);
+
+      const latest = all
+        .filter((e) => e.createdAt)
+        .sort((a, b) => b.createdAt.toMillis() - a.createdAt.toMillis())
+        .slice(0, 8);
+
+      recent.innerHTML = latest.length
+        ? latest.map((e) =>
+            '<tr>' +
+              '<td class="num">' + formatDate(e.createdAt) + '</td>' +
+              '<td>' + esc(e.name) + '<br><span class="num">' + esc(e.email) + '</span></td>' +
+              '<td>' + esc(e.projectType || '—') + '</td>' +
+              '<td><span class="pill pill--' + esc(e.status || 'new') + '">' +
+                esc(e.status || 'new') + '</span></td>' +
+            '</tr>').join('')
+        : '<tr><td colspan="4" class="empty">No enquiries yet. They will appear here as soon as someone uses the contact form.</td></tr>';
+
+    } catch (err) {
+      recent.innerHTML = '<tr><td colspan="4" class="empty">Could not load enquiries.</td></tr>';
+      setup.hidden = false;
+      setup.innerHTML = err.code === 'permission-denied'
+        ? 'Firestore refused the read. Check that the rules in <code>firestore.rules</code> have been deployed.'
+        : 'Could not reach Firestore: ' + esc(err.message);
+    }
+  </script>
+</body>
+</html>

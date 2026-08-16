@@ -697,6 +697,13 @@ img.founder__photo { object-fit: cover; }
   border-radius: var(--radius);
 }
 .form__status[hidden] { display: none; }
+/* Submission failed — the visitor needs to notice, and needs another route */
+.form__status--error {
+  background: #FEE4E2;
+  border-color: #F3B4AE;
+  border-left-color: #B42318;
+  color: #B42318;
+}
 
 /* ==========================================================================
    14. FOOTER

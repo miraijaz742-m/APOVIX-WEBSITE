@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Site content — Apovix Admin</title>
+  <link rel="icon" href="../assets/img/favicon.png" type="image/png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/css/admin.css" />
+</head>
+<body data-loading>
+
+  <div class="admin-shell">
+
+    <aside class="admin-side">
+      <a class="admin-side__brand" href="dashboard.html">
+        <img src="../assets/img/logo-mark.png" alt="" />
+        <span>APOVIX<span class="admin-side__tag">Admin</span></span>
+      </a>
+      <nav class="admin-nav" aria-label="Admin sections">
+        <ul>
+          <li><a href="dashboard.html">Dashboard</a></li>
+          <li><a href="enquiries.html">Enquiries</a></li>
+          <li><a href="content.html">Site content</a></li>
+          <li><a href="users.html">Users</a></li>
+        </ul>
+      </nav>
+      <div class="admin-side__foot">
+        <p class="admin-side__who" data-admin-name>—</p>
+        <span class="admin-side__role" data-admin-role>—</span>
+        <div class="admin-side__links">
+          <a href="../index.html" target="_blank" rel="noopener">View live site ↗</a>
+          <button type="button" data-signout>Sign out</button>
+        </div>
+      </div>
+    </aside>
+
+    <main class="admin-main">
+
+      <header class="admin-head">
+        <h1>Site content</h1>
+        <p>Details the website reads at page load, so you can change them without editing HTML.</p>
+      </header>
+
+      <div class="setup-note">
+        <h2>What this page can and cannot change</h2>
+        <p>
+          The website is static HTML. Only the fields listed below are read from
+          Firestore at page load — everything else (section copy, the legal pages,
+          screenshots) lives in the HTML files and is changed by editing them.
+        </p>
+      </div>
+
+      <div class="notice notice--error" id="error" hidden></div>
+      <div class="notice notice--ok" id="saved" hidden>Saved. The live site will show this on the next page load.</div>
+
+      <form id="content-form">
+
+        <section class="panel">
+          <div class="panel__head">
+            <h2>Contact details</h2>
+            <p class="panel__note">Shown in the contact section and the legal pages.</p>
+          </div>
+
+          <div class="field">
+            <label for="email">Email address</label>
+            <input id="email" name="email" type="email" />
+          </div>
+          <div class="field">
+            <label for="phone1">Phone 1</label>
+            <input id="phone1" name="phone1" type="tel" />
+          </div>
+          <div class="field">
+            <label for="phone2">Phone 2</label>
+            <input id="phone2" name="phone2" type="tel" />
+          </div>
+          <div class="field">
+            <label for="address">Address</label>
+            <textarea id="address" name="address" rows="3"></textarea>
+            <p class="field__hint">One line per line break.</p>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel__head">
+            <h2>Homepage headline</h2>
+            <p class="panel__note">The large heading and paragraph at the top of the site.</p>
+          </div>
+
+          <div class="field">
+            <label for="heroTitle">Headline</label>
+            <textarea id="heroTitle" name="heroTitle" rows="2"></textarea>
+          </div>
+          <div class="field">
+            <label for="heroLede">Paragraph below it</label>
+            <textarea id="heroLede" name="heroLede" rows="3"></textarea>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel__head">
+            <h2>Announcement bar</h2>
+            <p class="panel__note">Leave the message empty to hide the bar entirely.</p>
+          </div>
+
+          <div class="field">
+            <label for="noticeText">Message</label>
+            <input id="noticeText" name="noticeText" type="text" />
+          </div>
+          <div class="field">
+            <label for="noticeLink">Link (optional)</label>
+            <input id="noticeLink" name="noticeLink" type="url" placeholder="https://" />
+          </div>
+        </section>
+
+        <div class="form-actions">
+          <button class="btn btn--primary" type="submit" id="save">Save changes</button>
+          <button class="btn btn--ghost" type="button" id="reload">Discard and reload</button>
+        </div>
+      </form>
+
+    </main>
+  </div>
+
+  <script type="module">
+    import { db } from './assets/js/firebase-init.js';
+    import { requireAdmin, wireSignOut, markActiveNav, currentAdmin }
+      from './assets/js/auth-guard.js';
+    import { doc, getDoc, setDoc, serverTimestamp }
+      from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
+
+    await requireAdmin();
+    wireSignOut();
+    markActiveNav();
+
+    const form   = document.getElementById('content-form');
+    const errBox = document.getElementById('error');
+    const okBox  = document.getElementById('saved');
+    const save   = document.getElementById('save');
+
+    // Matches what the public site falls back to when Firestore is unreachable,
+    // so an empty database never blanks the website.
+    const DEFAULTS = {
+      email: 'aijazm742@gmail.com',
+      phone1: '+91 91034 00985',
+      phone2: '+91 60051 09434',
+      address: 'Apovix Technologies\nBeerwah, Budgam\nJammu & Kashmir 193411, India',
+      heroTitle: 'We build custom software, websites and AI tools for businesses.',
+      heroLede: 'Apovix is a two-person studio. We take on a small number of projects at a time, work directly with the people who will use what we build, and stay on after launch.',
+      noticeText: '',
+      noticeLink: ''
+    };
+
+    const ref = doc(db, 'siteContent', 'main');
+
+    async function load() {
+      errBox.hidden = true; okBox.hidden = true;
+      try {
+        const snap = await getDoc(ref);
+        const data = snap.exists() ? snap.data() : DEFAULTS;
+        Object.keys(DEFAULTS).forEach((key) => {
+          const el = form.elements[key];
+          if (el) el.value = data[key] != null ? data[key] : DEFAULTS[key];
+        });
+        if (!snap.exists()) {
+          errBox.className = 'notice notice--warn';
+          errBox.textContent =
+            'No content document exists yet. The fields below show the values currently ' +
+            'hard-coded in the site — press Save to create the document.';
+          errBox.hidden = false;
+        }
+      } catch (err) {
+        errBox.className = 'notice notice--error';
+        errBox.textContent = err.code === 'permission-denied'
+          ? 'Firestore refused the read — check that firestore.rules is deployed.'
+          : 'Could not reach Firestore: ' + err.message;
+        errBox.hidden = false;
+      }
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      errBox.hidden = true; okBox.hidden = true;
+      save.disabled = true; save.textContent = 'Saving…';
+
+      const payload = { updatedAt: serverTimestamp(), updatedBy: currentAdmin.email };
+      Object.keys(DEFAULTS).forEach((key) => {
+        payload[key] = form.elements[key].value.trim();
+      });
+
+      try {
+        await setDoc(ref, payload, { merge: true });
+        okBox.hidden = false;
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } catch (err) {
+        errBox.className = 'notice notice--error';
+        errBox.textContent = err.code === 'permission-denied'
+          ? 'Firestore refused the write. Only accounts listed in /admins may edit content.'
+          : 'Could not save: ' + err.message;
+        errBox.hidden = false;
+      } finally {
+        save.disabled = false; save.textContent = 'Save changes';
+      }
+    });
+
+    document.getElementById('reload').addEventListener('click', load);
+    await load();
+  </script>
+</body>
+</html>

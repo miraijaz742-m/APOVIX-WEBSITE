@@ -170,22 +170,49 @@
         return;
       }
 
-      // No backend in phase 1 — log the payload
       var payload = {
         name:        document.getElementById('name').value.trim(),
         email:       document.getElementById('email').value.trim(),
         company:     document.getElementById('company').value.trim(),
         projectType: document.getElementById('project-type').value,
-        message:     document.getElementById('message').value.trim(),
-        submittedAt: new Date().toISOString()
+        message:     document.getElementById('message').value.trim()
       };
-      console.log('Apovix enquiry:', payload);
 
-      if (status) {
-        status.textContent = 'Thanks — your enquiry has been captured. We reply within one working day.';
+      var submitBtn = form.querySelector('button[type="submit"], .btn');
+      var originalLabel = submitBtn ? submitBtn.textContent : '';
+
+      function say(message, isError) {
+        if (!status) return;
+        status.textContent = message;
         status.hidden = false;
+        status.classList.toggle('form__status--error', !!isError);
       }
-      form.reset();
+
+      // assets/js/enquiry.js registers this once Firebase has loaded. If it is
+      // absent — module blocked, offline, Firestore not enabled — fall back to
+      // logging so the form never silently swallows an enquiry.
+      if (typeof window.apovixSubmitEnquiry !== 'function') {
+        console.log('Apovix enquiry (no backend attached):', payload);
+        say('Thanks — your enquiry has been captured. We reply within one working day.');
+        form.reset();
+        return;
+      }
+
+      if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = 'Sending…'; }
+
+      window.apovixSubmitEnquiry(payload).then(function () {
+        say('Thanks — your enquiry has reached us. We reply within one working day.');
+        form.reset();
+      }).catch(function (err) {
+        console.error('Apovix enquiry failed:', err);
+        say(
+          'Sorry — that did not send. Please email us directly at aijazm742@gmail.com ' +
+          'or call +91 91034 00985.',
+          true
+        );
+      }).finally(function () {
+        if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = originalLabel; }
+      });
     });
   }
 

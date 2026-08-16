@@ -1,3 +1,13 @@
+# Environment / config — never commit real values
+.env
+.env.*
+!.env.example
+
+# Service account keys — these ARE secret. They belong in GitHub Actions
+# secrets, never in the repo.
+*serviceAccount*.json
+*-firebase-adminsdk-*.json
+
 # Windows folder metadata
 desktop.ini
 Thumbs.db

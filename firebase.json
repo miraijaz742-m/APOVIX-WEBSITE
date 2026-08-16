@@ -24,6 +24,16 @@
         ]
       },
       {
+        "comment": "The rule above matches /about.html but not the bare '/' that serves index.html, which would otherwise fall back to Firebase's 1 hour default and delay homepage updates.",
+        "source": "/",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "public, max-age=0, must-revalidate"
+          }
+        ]
+      },
+      {
         "source": "**/*.@(png|jpg|jpeg|gif|svg|webp|ico)",
         "headers": [
           {

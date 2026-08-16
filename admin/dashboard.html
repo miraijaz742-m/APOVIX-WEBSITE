@@ -51,40 +51,61 @@
       <div class="notice notice--warn" id="setup" hidden></div>
 
       <div class="stats">
-        <div class="stat">
-          <p class="stat__label">New enquiries</p>
-          <p class="stat__value" data-stat="new">—</p>
+        <div class="stat" data-tile="new">
+          <p class="stat__label">Needs a reply</p>
+          <p class="stat__value" data-stat="new">&mdash;</p>
         </div>
         <div class="stat">
-          <p class="stat__label">Total enquiries</p>
-          <p class="stat__value" data-stat="total">—</p>
+          <p class="stat__label">Enquiries</p>
+          <p class="stat__value" data-stat="total">&mdash;</p>
+        </div>
+        <div class="stat">
+          <p class="stat__label">Registered users</p>
+          <p class="stat__value" data-stat="users">&mdash;</p>
         </div>
         <div class="stat">
           <p class="stat__label">Last 30 days</p>
-          <p class="stat__value" data-stat="month">—</p>
-        </div>
-        <div class="stat">
-          <p class="stat__label">Admin users</p>
-          <p class="stat__value" data-stat="admins">—</p>
+          <p class="stat__value" data-stat="month">&mdash;</p>
         </div>
       </div>
 
-      <section class="panel">
-        <div class="panel__head">
-          <h2>Latest enquiries</h2>
-          <a class="btn btn--ghost btn--sm" href="enquiries.html">See all</a>
-        </div>
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr><th>Received</th><th>Name</th><th>Project</th><th>Status</th></tr>
-            </thead>
-            <tbody id="recent">
-              <tr><td colspan="4" class="empty">Loading…</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </section>
+      <div class="panel-pair">
+
+        <section class="panel">
+          <div class="panel__head">
+            <h2>Latest enquiries</h2>
+            <a class="btn btn--ghost btn--sm" href="enquiries.html">See all</a>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>Received</th><th>From</th><th>Status</th></tr>
+              </thead>
+              <tbody id="recent">
+                <tr><td colspan="3" class="empty empty--tight">Loading&hellip;</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel__head">
+            <h2>Latest signups</h2>
+            <a class="btn btn--ghost btn--sm" href="members.html">See all</a>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>Joined</th><th>Name</th><th>Phone</th></tr>
+              </thead>
+              <tbody id="signups">
+                <tr><td colspan="3" class="empty empty--tight">Loading&hellip;</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+      </div>
 
     </main>
   </div>
@@ -93,55 +114,93 @@
     import { db } from './assets/js/firebase-init.js';
     import { requireAdmin, wireSignOut, markActiveNav, esc, formatDate }
       from './assets/js/auth-guard.js';
-    import { collection, getDocs, query, orderBy, limit, where, Timestamp }
+    import { collection, getDocs, Timestamp }
       from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
 
     await requireAdmin();
     wireSignOut();
     markActiveNav();
 
-    const setup = document.getElementById('setup');
-    const recent = document.getElementById('recent');
+    const setup   = document.getElementById('setup');
+    const recent  = document.getElementById('recent');
+    const signups = document.getElementById('signups');
 
     function setStat(key, value) {
-      document.querySelector('[data-stat="' + key + '"]').textContent = value;
+      const el = document.querySelector('[data-stat="' + key + '"]');
+      if (el) el.textContent = value;
     }
 
-    try {
-      const snap = await getDocs(collection(db, 'enquiries'));
-      const all = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+    function warn(message) {
+      setup.hidden = false;
+      setup.innerHTML = message;
+    }
 
-      const monthAgo = Timestamp.fromMillis(Date.now() - 30 * 24 * 60 * 60 * 1000);
+    /** Newest first, tolerating documents with no timestamp yet. */
+    function byNewest(a, b) {
+      const at = a.createdAt ? a.createdAt.toMillis() : 0;
+      const bt = b.createdAt ? b.createdAt.toMillis() : 0;
+      return bt - at;
+    }
 
+    const monthAgo = Timestamp.fromMillis(Date.now() - 30 * 24 * 60 * 60 * 1000);
+
+    // Load both collections independently: a failure on one should not blank
+    // the other half of the dashboard.
+    const [enqRes, userRes] = await Promise.allSettled([
+      getDocs(collection(db, 'enquiries')),
+      getDocs(collection(db, 'users'))
+    ]);
+
+    /* ---- enquiries ---- */
+    if (enqRes.status === 'fulfilled') {
+      const all = enqRes.value.docs.map((d) => ({ id: d.id, ...d.data() }));
+      const unread = all.filter((e) => (e.status || 'new') === 'new').length;
+
+      setStat('new', unread);
       setStat('total', all.length);
-      setStat('new',   all.filter((e) => e.status === 'new').length);
       setStat('month', all.filter((e) => e.createdAt && e.createdAt >= monthAgo).length);
 
-      const admins = await getDocs(collection(db, 'admins'));
-      setStat('admins', admins.size);
+      // Highlight the tile only when something is actually waiting.
+      const tile = document.querySelector('[data-tile="new"]');
+      if (tile) tile.classList.add(unread ? 'stat--action' : 'stat--zero');
 
-      const latest = all
-        .filter((e) => e.createdAt)
-        .sort((a, b) => b.createdAt.toMillis() - a.createdAt.toMillis())
-        .slice(0, 8);
-
+      const latest = all.sort(byNewest).slice(0, 6);
       recent.innerHTML = latest.length
-        ? latest.map((e) =>
-            '<tr>' +
+        ? latest.map((e) => {
+            const status = esc(e.status || 'new');
+            return '<tr>' +
               '<td class="num">' + formatDate(e.createdAt) + '</td>' +
-              '<td>' + esc(e.name) + '<br><span class="num">' + esc(e.email) + '</span></td>' +
-              '<td>' + esc(e.projectType || '—') + '</td>' +
-              '<td><span class="pill pill--' + esc(e.status || 'new') + '">' +
-                esc(e.status || 'new') + '</span></td>' +
-            '</tr>').join('')
-        : '<tr><td colspan="4" class="empty">No enquiries yet. They will appear here as soon as someone uses the contact form.</td></tr>';
+              '<td><strong>' + esc(e.name) + '</strong><br>' +
+                  '<span class="num">' + esc(e.email) + '</span></td>' +
+              '<td><span class="pill pill--' + status + '">' + status + '</span></td>' +
+            '</tr>';
+          }).join('')
+        : '<tr><td colspan="3" class="empty empty--tight">Nothing yet. Enquiries from the contact form land here.</td></tr>';
+    } else {
+      recent.innerHTML = '<tr><td colspan="3" class="empty empty--tight">Could not load.</td></tr>';
+      warn(enqRes.reason && enqRes.reason.code === 'permission-denied'
+        ? 'Firestore refused the enquiries read. Check that <code>firestore.rules</code> is deployed.'
+        : 'Could not load enquiries: ' + esc(enqRes.reason && enqRes.reason.message));
+    }
 
-    } catch (err) {
-      recent.innerHTML = '<tr><td colspan="4" class="empty">Could not load enquiries.</td></tr>';
-      setup.hidden = false;
-      setup.innerHTML = err.code === 'permission-denied'
-        ? 'Firestore refused the read. Check that the rules in <code>firestore.rules</code> have been deployed.'
-        : 'Could not reach Firestore: ' + esc(err.message);
+    /* ---- registered users ---- */
+    if (userRes.status === 'fulfilled') {
+      const users = userRes.value.docs.map((d) => ({ uid: d.id, ...d.data() }));
+      setStat('users', users.length);
+
+      const latest = users.sort(byNewest).slice(0, 6);
+      signups.innerHTML = latest.length
+        ? latest.map((u) =>
+            '<tr>' +
+              '<td class="num">' + formatDate(u.createdAt) + '</td>' +
+              '<td><strong>' + esc(u.name) + '</strong><br>' +
+                  '<span class="num">' + esc(u.email) + '</span></td>' +
+              '<td class="num">' + esc(u.phone || '—') + '</td>' +
+            '</tr>').join('')
+        : '<tr><td colspan="3" class="empty empty--tight">Nobody has registered yet.</td></tr>';
+    } else {
+      setStat('users', '—');
+      signups.innerHTML = '<tr><td colspan="3" class="empty empty--tight">Could not load.</td></tr>';
     }
   </script>
 </body>

@@ -812,7 +812,10 @@ img.founder__photo { object-fit: cover; }
   .about { grid-template-columns: 1fr 1fr; }
   .contact { grid-template-columns: 1fr 1fr; align-items: start; }
   .site-footer__top { grid-template-columns: 1.2fr 1.8fr; }
-  .site-footer__links { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  /* Four groups now (Services, Products, Company, Legal). auto-fit lets them
+     settle into 2 columns on a narrow desktop and 4 on a wide one, instead of
+     a fixed count that orphans the last group. */
+  .site-footer__links { grid-template-columns: repeat(auto-fit, minmax(9.5rem, 1fr)); }
 }
 
 @media (min-width: 960px) {
@@ -964,6 +967,49 @@ img.founder__photo { object-fit: cover; }
     max-height: calc(100vh - 8rem);
     overflow-y: auto;
   }
+}
+
+/* ==========================================================================
+   18. PRODUCTS PAGE
+   One product per row: screenshot, then the copy beneath it. Becomes two
+   columns from 860px so the shot and the feature list sit side by side.
+   ========================================================================== */
+.products { display: grid; gap: clamp(3rem, 6vw, 5rem); }
+
+.product {
+  display: grid;
+  gap: clamp(1.5rem, 3vw, 2.5rem);
+  align-items: start;
+  padding-bottom: clamp(3rem, 6vw, 5rem);
+  border-bottom: 1px solid var(--line);
+}
+.product:last-child { padding-bottom: 0; border-bottom: 0; }
+
+.product__name { font-size: var(--text-3xl); margin-bottom: 0.75rem; }
+.product__lede {
+  font-size: var(--text-lg);
+  max-width: 42ch;
+  margin-bottom: 1.75rem;
+}
+.product .card__list { border-top: 1px solid var(--line); }
+
+.product__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.875rem;
+  margin-top: 1.75rem;
+}
+.product__note { margin-top: 1.25rem; font-size: var(--text-sm); }
+
+@media (min-width: 860px) {
+  .product { grid-template-columns: 1.05fr 1fr; gap: clamp(2.5rem, 4vw, 4rem); }
+  /* Alternate the image side so the page does not read as a single column */
+  .product:nth-child(even) > img { order: 2; }
+}
+
+@media (max-width: 520px) {
+  .product__actions .btn { width: 100%; }
 }
 
 /* ==========================================================================

@@ -9,6 +9,14 @@ APOVIX.zip
 # Stray extensionless duplicate of assets/img/hero.svg
 /hero
 
+# Firebase deploy tooling caches
+.firebase/
+firebase-debug.log*
+firestore-debug.log*
+
 # Editor
 .vscode/
 .idea/
+
+# Claude Code local settings
+.claude/settings.local.json

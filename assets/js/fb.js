@@ -12,6 +12,7 @@ import { initializeApp, getApps, getApp }
   from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js';
 import { getAuth } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
 import { getFirestore } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
+import { attachAppCheck } from './appcheck.js';
 
 const firebaseConfig = {
   apiKey: 'AIzaSyBhAN3PcT-h2F_mNuwPC7wQhKmj9Bo0dGU',
@@ -23,6 +24,11 @@ const firebaseConfig = {
 };
 
 export const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
+
+// Before getAuth/getFirestore, so the very first request already carries a
+// token. Awaited at module scope: every importer waits, which is the point.
+await attachAppCheck(app);
+
 export const auth = getAuth(app);
 export const db = getFirestore(app);
 

@@ -7,6 +7,8 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js';
 import { getAuth } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
 import { getFirestore } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
+// Shared with the public site so there is one site key, not two that drift.
+import { attachAppCheck } from '../../../assets/js/appcheck.js';
 
 const firebaseConfig = {
   apiKey: 'AIzaSyBhAN3PcT-h2F_mNuwPC7wQhKmj9Bo0dGU',
@@ -18,5 +20,11 @@ const firebaseConfig = {
 };
 
 export const app = initializeApp(firebaseConfig);
+
+// Before getAuth/getFirestore, so the panel's first request already carries a
+// token. If the admin panel were left out, enforcing App Check would lock you
+// out of your own control panel.
+await attachAppCheck(app);
+
 export const auth = getAuth(app);
 export const db = getFirestore(app);

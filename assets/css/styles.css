@@ -1182,6 +1182,33 @@ img.founder__photo { object-fit: cover; }
 }
 .mobile-menu__nav .user-chip__name { max-width: none; }
 
+/* Signed in with Google but never finished the form — the phone number is
+   still missing, so the chip points at register rather than account. */
+.user-chip--incomplete .avatar {
+  box-shadow: 0 0 0 2px var(--accent);
+}
+.user-chip--incomplete .user-chip__name {
+  color: var(--accent-dark);
+  max-width: none;
+}
+
+.profile-banner {
+  background: #FFF6DC;
+  border-bottom: 1px solid #E8CE84;
+  color: #7A5200;
+}
+.profile-banner__inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem 1.5rem;
+  padding-block: 0.75rem;
+}
+.profile-banner__text { font-size: var(--text-sm); max-width: 60ch; }
+.profile-banner__text strong { color: #5C3D00; }
+.profile-banner .btn--sm { padding: 0.5rem 1rem; font-size: var(--text-xs); }
+
 /* The account page's own heading avatar */
 .account-head {
   display: flex;
